@@ -97,10 +97,10 @@ P_h(Ca)=(k1*Ca*Ca*Ca*Ca/(k1*Ca*Ca*Ca*Ca+k2))
 
 #System equation
 Vt'=-(I_L_t(Vt)+I_rt(Vt,s_rt))/tau-(I_LK_t(Vt)+I_T_t(Vt,h_T_t)+I_h(Vt,m_h,m_h2))
-Vr'=-(I_L_r(Vr)+I_tr(Vr,s_er)+I_rr(Vr,s_rr))/tau-(I_LK_r(Vr)+I_T_r(Vr,h_T_r))
-Ca'=(alpha_Ca*I_T_t(Vt,h_T_t)-(Ca-Ca_0)/tau_Ca)
-h_T_t'=(h_inf_T_t(Vt)-h_T_t)/tau_h_T_t(Vt)
-h_T_r'=(h_inf_T_r(Vr)-h_T_r)/tau_h_T_r(Vr)
+Vr(t)=-(I_L_r(Vr)+I_tr(Vr,s_er)+I_rr(Vr,s_rr))/tau-(I_LK_r(Vr)+I_T_r(Vr,h_T_r))
+dCa/dt=(alpha_Ca*I_T_t(Vt,h_T_t)-(Ca-Ca_0)/tau_Ca)
+h_T_t(t)=(h_inf_T_t(Vt)-h_T_t)/tau_h_T_t(Vt)
+dh_T_r/dt=(h_inf_T_r(Vr)-h_T_r)/tau_h_T_r(Vr)
 m_h'=((m_inf_h(Vt)*(1-m_h2)-m_h)/tau_m_h(Vt)-k3*P_h(Ca)*m_h+k4*m_h2)
 m_h2'=(k3*P_h(Ca)*m_h-k4*m_h2)
 s_er'=x_er
