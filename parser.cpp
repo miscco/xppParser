@@ -1,5 +1,26 @@
 #include <parser.h>
 
+parser::parser(std::string fn)
+: fileName(fn)
+{
+	int err = parse_file();
+	if(err == -1) {
+		std::cout << "Could not open file " << fileName << std::endl;
+	} else if (err==0) {
+		std::cout << "Empty ode file " << fileName << std::endl;
+	}
+
+	remove_comments();
+	remove_spaces();
+	split_lines();
+
+	extract_Constants();
+	extract_Equations();
+	extract_Functions();
+	extract_InitConds();
+	extract_Parameter();
+}
+
 void parser::remove_comments() {
 	unsigned i = 0;
 	while(i<lines.size()) {

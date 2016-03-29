@@ -15,10 +15,11 @@ typedef std::vector<opts> optsArray;
 
 class parser {
 public:
-	parser(std::string fn)
-	: fileName(fn)
-	{}
+	parser(std::string fn);
 
+	/* Vector containing the individual lines from the ode file */
+	std::vector<std::string> lines;
+private:
 	int parse_file(void);
 	void extract_Constants(void);
 	void extract_Equations(void);
@@ -30,9 +31,6 @@ public:
 	void remove_spaces(void);
 	void split_lines(void);
 
-	/* Vector containing the individual lines from the ode file */
-	std::vector<std::string> lines;
-private:
 	/* Filename of the ode file */
 	std::string				 fileName;
 
