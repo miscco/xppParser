@@ -27,6 +27,7 @@ private:
 	void extract_InitConds(void);
 	void extract_Options(void);
 	void extract_Parameter(void);
+	void print_lines(void);
 	void remove_comments(void);
 	void remove_spaces(void);
 	void split_lines(void);

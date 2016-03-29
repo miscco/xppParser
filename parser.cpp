@@ -1,7 +1,7 @@
 #include <parser.h>
 
 parser::parser(std::string fn)
-: fileName(fn)
+	: fileName(fn)
 {
 	int err = parse_file();
 	if(err == -1) {
@@ -13,12 +13,14 @@ parser::parser(std::string fn)
 	remove_comments();
 	remove_spaces();
 	split_lines();
+	print_lines();
 
 	extract_Constants();
 	extract_Equations();
 	extract_Functions();
 	extract_InitConds();
 	extract_Parameter();
+
 }
 
 void parser::remove_comments() {
@@ -180,9 +182,9 @@ int parser::parse_file(void) {
 void parser::split_lines(void) {
 	unsigned i=0;
 	while(i<lines.size()) {
-		std::vector<int> left_par;
-		std::vector<int> right_par;
-		std::vector<int> comma;
+		std::vector<int> left_par(0);
+		std::vector<int> right_par(0);
+		std::vector<int> comma(0);
 		/* Search for commata. However, if they are inside a parenthis,
 		 * then they are part of a function and we cannot split those.
 		 */
@@ -195,10 +197,10 @@ void parser::split_lines(void) {
 				comma.push_back(j);
 			}
 		}
-		comma.push_back(lines[i].size());
 		if(left_par.size() != right_par.size()) {
 			std::cout << "Error: Missing parenthis.\n";
 		}
+
 		/* Remove those indices to commata inside a parenthis */
 		for(unsigned j=0; j<left_par.size(); j++) {
 			unsigned k=0;
@@ -211,13 +213,31 @@ void parser::split_lines(void) {
 			}
 		}
 
-		/* Create the substrings */
-		std::vector<std::string> substrings;
-		for(unsigned j=0; j<comma.size()-1; j++) {
-			substrings.push_back(lines[i].substr(comma[j], comma[j+1]));
+		/* Check if there was a stray comma at end of line */
+		if(comma.size() > 0) {
+			if(comma.back()==(int)lines[i].size()-1) {
+				lines[i].pop_back();
+				comma.pop_back();
+			}
 		}
-
-		/* Check if there were kexwords omitted in the listing */
+		/* If there are commata left then split thestring and insert as a new line */
+		if(comma.size()>0) {
+			/* Add the size of the line as ending of the last substring */
+			comma.push_back(lines[i].size());
+			/* Insert the substrings */
+			for(unsigned j=0; j<comma.size()-1; j++) {
+				lines.insert(lines.begin()+i+j+1, lines[i].substr(comma[j]+1, comma[j+1]-comma[j]-1));
+			}
+			/* cut the original line */
+			lines[i] = lines[i].substr(0, comma[0]);
+		}
 		i++;
+	}
+}
+
+
+void parser::print_lines(void) {
+	for(unsigned i=0; i<lines.size(); ++i) {
+		std::cout << lines[i] << std::endl;
 	}
 }

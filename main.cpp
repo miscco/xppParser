@@ -4,11 +4,9 @@
 
 int main()
 {
-	std::string filename = "../test_parser/Thalamus.ode";
+	std::string filename = "../Thalamus.ode";
 	parser ParseOde(filename);
 
-	for(unsigned i=0; i<ParseOde.lines.size(); ++i) {
-		std::cout << ParseOde.lines[i] << std::endl;
-	}
+
 	return 0;
 }
