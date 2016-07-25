@@ -11,26 +11,27 @@ typedef struct {
 	std::string					Value;
 	std::vector<std::string>	Args;
 } opts;
+
 typedef std::vector<opts> optsArray;
 
 class parser {
 public:
-	parser(std::string fn);
+	parser(std::string);
 
 	/* Vector containing the individual lines from the ode file */
 	std::vector<std::string> lines;
 private:
-	int parse_file(void);
-	void extract_Constants(void);
-	void extract_Equations(void);
-	void extract_Functions(void);
-	void extract_InitConds(void);
-	void extract_Options(void);
-	void extract_Parameter(void);
-	void print_lines(void);
-	void remove_comments(void);
-	void remove_spaces(void);
-	void split_lines(void);
+	int parseFile			(void);
+	void expandArrays		(void);
+	void extractConstants	(void);
+	void extractEquations	(void);
+	void extractFunctions	(void);
+	void extractInitConds	(void);
+	void extractOptions		(void);
+	void extractParameter	(void);
+	void removeComments		(void);
+	void removeSpaces		(void);
+	void splitLines			(void);
 
 	/* Filename of the ode file */
 	std::string				 fileName;

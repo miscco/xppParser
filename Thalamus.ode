@@ -39,6 +39,8 @@ param g_LK=0.0, g_h=0.025
 !gamma_t=70E-3
 !gamma_r=100E-3
 
+x[1..4]'=-x[j]+[j]
+
 #Connectivities
 !N_tr=3
 !N_rt=5
