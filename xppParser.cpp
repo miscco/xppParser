@@ -335,13 +335,20 @@ void xppParser::readFile(void) {
 void xppParser::removeComments() {
 	unsigned i = 0;
 	while(i < lines.size()) {
-		std::size_t pos = lines[i].find("#");
+		std::size_t pos1 = lines[i].find("#");
 		std::size_t pos2 = lines[i].find_first_not_of(" \t\f\v\r\n");
 		std::size_t pos3 = lines[i].find_last_not_of(" \t\f\v\r\n");
-		if (pos == 0 || pos == pos2) {
+		if (pos1 == 0 || pos1 == pos2) {
 			lines.erase(lines.begin() + i);
-		} else if (pos != std::string::npos) {
-			lines[i].resize(pos);
+		} else if (pos1 != std::string::npos) {
+			/* Check if this is the definition of a convolutional integral
+			 * indicated by curly braces sourrunding the # sign
+			 */
+			std::size_t subpos1 = lines[i].find_last_of("{", pos1);
+			std::size_t subpos2 = lines[i].find("}", subpos1);
+			if (subpos1 == std::string::npos || subpos2 < pos1) {
+				lines[i].resize(pos1);
+			}
 			i++;
 		} else if (pos3 != lines[i].size()-1) {
 			lines[i].resize(pos3);
