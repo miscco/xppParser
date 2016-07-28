@@ -62,10 +62,10 @@ void xppParser::expandArrays() {
 			pos2 = lines[i].find("..");
 			pos3 = lines[i].find("]");
 			if (pos3 == std::string::npos) {
-				throw xppParserException(MISSING_BRACKET, i, pos1, this);
+				throw xppParserException(MISSING_BRACKET, this->lines[i], i, pos1);
 			} else if (pos2 != std::string::npos)  {
 				if (pos2 > pos3) {
-					throw xppParserException(WRONG_ARRAY_ASSIGNMENT, i, pos2, this);
+					throw xppParserException(WRONG_ARRAY_ASSIGNMENT, this->lines[i], i, pos2);
 				}
 			}
 
@@ -74,12 +74,12 @@ void xppParser::expandArrays() {
 			try {
 				start = std::stoi(lines[i].substr(pos1+1, pos2-pos1-1));
 			} catch (std::invalid_argument) {
-				throw xppParserException(NO_NUMBER, i, pos1+1, this);
+				throw xppParserException(NO_NUMBER, this->lines[i], i, pos1+1);
 			}
 			try {
 				end = std::stoi(lines[i].substr(pos2+2, pos3-pos2-2));
 			} catch (std::invalid_argument) {
-				throw xppParserException(NO_NUMBER, i, pos2+2, this);
+				throw xppParserException(NO_NUMBER, this->lines[i], i, pos2+2);
 			}
 
 			/* Copy the lines of the assignment into a separate vector */
@@ -195,7 +195,7 @@ void xppParser::extractDefinitions(void) {
 		if (pos2 == std::string::npos) {
 			pos1 = lines[i].find("done");
 			if (pos1 == std::string::npos) {
-				throw xppParserException(UNKNOWN_ASSIGNMENT, i, 0, this);
+				throw xppParserException(UNKNOWN_ASSIGNMENT, this->lines[i], i, 0);
 			} else {
 				lines.erase(lines.begin()+i);
 			}
@@ -252,13 +252,13 @@ void xppParser::extractMarkov(void) {
 				try {
 					nstates = std::stoi(lines[i].substr(pos1, lines[i].back()));
 				} catch (std::invalid_argument) {
-					throw xppParserException(NO_NUMBER, i, pos1, this);
+					throw xppParserException(NO_NUMBER, this->lines[i], i, pos1);
 				}
 			} else {
 				try {
 					nstates = std::stoi(lines[i].substr(pos1, pos2-pos1));
 				} catch (std::invalid_argument) {
-					throw xppParserException(NO_NUMBER, i, pos1, this);
+					throw xppParserException(NO_NUMBER, this->lines[i], i, pos1);
 				}
 			}
 			/* Store the number of states for convenience */
@@ -273,7 +273,7 @@ void xppParser::extractMarkov(void) {
 					pos2 = lines[i+1].find("}", pos1);
 					if (pos1 == std::string::npos ||
 						pos2 == std::string::npos) {
-						throw xppParserException(WRONG_MARKOV_ASSIGNMENT, i+1, pos1, this);
+						throw xppParserException(WRONG_MARKOV_ASSIGNMENT, this->lines[i+1], i+1, pos1);
 					}
 					opt.Args.push_back(lines[i+j].substr(pos1+1, pos2-pos1-1));
 				}
