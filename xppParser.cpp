@@ -13,8 +13,11 @@ xppParser::xppParser(std::string fn)
 	: fileName(fn)
 {
 	try {
-		/* Initially parse the ode file */
+		/* Initially read in the ode file */
 		readFile();
+
+		/* Initialize the keyword tree for command paring */
+		initializeTree();
 
 		/* Remove all comments */
 		removeComments();
@@ -42,11 +45,12 @@ xppParser::xppParser(std::string fn)
 }
 
 /**
- * @brief Expand array descriptions in ode files
+ * @brief Expand array expressions in ode files
  *
  * This function searches for the array expressions found in ode files, that are
- * marked by "x[start .. end]" for single line or "%[" for multi line statements.
- * Every array line is duplicated end-start+1 times
+ * marked by "x[start .. end]" for single line or "%[start .. end] ... %" for
+ * multi line statements. Every array line is duplicated end-start+1 times,
+ * while preserving the original order of lines.
  */
 void xppParser::expandArrays() {
 	unsigned i=0;
@@ -283,6 +287,15 @@ void xppParser::extractMarkov(void) {
 		} else {
 			i++;
 		}
+	}
+}
+
+/**
+ * @brief Initializes the keyword tree from the keywords
+ */
+void xppParser::initializeTree (void) {
+	for (size_t i=0; i < keywords.size(); i++) {
+		keywordTree.insert(keywords.at(i));
 	}
 }
 

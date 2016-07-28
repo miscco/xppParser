@@ -4,7 +4,7 @@
 
 int main()
 {
-	std::string filename = "Thalamus.ode";
+	std::string filename = "../Thalamus.ode";
 	xppParser ParseOde(filename);
 
 	for(unsigned i=0; i<ParseOde.lines.size(); ++i) {

@@ -9,6 +9,7 @@
 
 #include "xppParserException.h"
 
+#include "aho_corasick/aho_corasick.hpp"
 //#include "exprtk/exprtk.hpp"
 
 typedef struct {
@@ -32,6 +33,7 @@ private:
 							 int idx);
 	void extractDefinitions	(void);
 	void extractMarkov		(void);
+	void initializeTree		(void);
 	void readFile			(void);
 	void removeComments		(void);
 
@@ -39,7 +41,34 @@ private:
 	std::string				 fileName;
 
 	/* Keywords utilized in the ode file */
-	std::vector<std::string> keywords;
+	const std::vector<std::string> keywords = {
+		"!",
+		"(t+1)",
+		"/dt",
+		"'",
+		"(t)",
+		"volterra",
+		// "markov", /* This is handeled separately */
+		"aux",
+		"par",
+		"number",
+		"(",
+		// "table", /* This is handeled separately */
+		"wiener",
+		"global",
+		"init",
+		"(0)",
+		"bdry",
+		"0=",
+		"solve",
+		"special",
+		"set",
+		"@",
+		"export"
+	};
+
+	/* The corresponding keyword tree */
+	aho_corasick::trie keywordTree;
 
 	/* Options arrays */
 	optsArray Constants;

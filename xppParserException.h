@@ -35,23 +35,19 @@ public:
 		case NO_NUMBER:
 			m_msg = std::string("Cannot parse number");
 			break;
+		case UNKNOWN_ASSIGNMENT:
+			m_msg = std::string("Unknown assignment");
+			break;
 		case WRONG_ARRAY_ASSIGNMENT:
 			m_msg = std::string("Wrong array assignment");
 			break;
 		case WRONG_MARKOV_ASSIGNMENT:
 			m_msg = std::string("Wrong assignment of markov process");
 			break;
-		case UNKNOWN_ASSIGNMENT:
-			m_msg = std::string("Unknown assignment");
-			break;
 		}
 		m_msg += " in line " + std::to_string(lineNumber+1) + ":\n";
 		m_msg += line + "\n";
-		if (pos > 0) {
-			m_msg += std::string(pos-1, ' ') + "^^^\n";
-		} else {
-			m_msg += "^^^\n";
-		}
+		m_msg += pos == 0 ? "^^^\n" : std::string(pos-1, ' ') + "^^^\n";
 	}
 
 	virtual const char* what() const throw()
