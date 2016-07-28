@@ -1,50 +1,28 @@
 #Thalamic model
 
 param g_LK=0.0, g_h=0.025
-
-#Time constants for excitatory and inhibitory neurons in ms
+ 
+  #Time constants for excitatory and inhibitory neurons in ms
 !tau=20
 
 #Conductances 
-!g_L=1 #Test comment
+!g_L=1#Test comment
 
-!g_T_t=3  #Test comment2
-!g_T_r=2.3
-
-!g_AMPA=1, !g_GABA=1
-
-#Reversal potential of excitatory and inhibitory synapses in mV
-!E_AMPA=0
-!E_GABA=-70
-
-# Reversal potential of other currents
-!E_L    =  -70
-!E_K=-100 
-!E_Ca=  120
-!E_h=-40
-
-#Maximum firing rate in ms^-1
-!Q_max=400E-3
-
-#Sigmoid threshold in mV
-!theta=-58.5
-
-#Slope for sigmoid in mV
-!sigma=6
-
-#Scaling parameter for sigmoidal mapping(dimensionless)
-!C=(pi/sqrt(3))
-
-#PSC rise time in ms^-1
-!gamma_t=70E-3
-!gamma_r=100E-3
+markov z 2
+{0} {alpha(v)}
+{beta(v)} {0}
 
 x[1..4]'=-x[j]+[j]
 
 #Connectivities
-!N_tr=3
+!N_tr =3
 !N_rt=5
 !N_rr=25
+
+%[1..4]
+x[j]'=-y[j]-x[j-1]
+y[j]'=x[j]
+%
 
 #Calcium dynamic
 !alpha_Ca=-51.8E-6
