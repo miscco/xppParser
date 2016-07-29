@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <fstream>
+#include <stack>
 #include <string>
 #include <vector>
 
@@ -27,15 +28,18 @@ public:
 	/* Vector containing the individual lines from the ode file */
 	std::vector<std::string> lines;
 private:
+	void checkBrackets		(void);
 	void expandArrays		(void);
 	void expandArrayLines	(std::vector<std::string> &lines,
 							 const std::vector<std::string> &expressions,
 							 int idx);
 	void extractDefinitions	(void);
 	void extractMarkov		(void);
+	int  getKeywordCode		(std::string key);
 	void initializeTree		(void);
 	void readFile			(void);
 	void removeComments		(void);
+	void removeWhitespace	(void);
 
 	/* Filename of the ode file */
 	std::string				 fileName;
@@ -44,15 +48,15 @@ private:
 	const std::vector<std::string> keywords = {
 		"!",
 		"(t+1)",
-		"/dt",
 		"'",
+		"/dt",
 		"(t)",
 		"volterra",
 		// "markov", /* This is handeled separately */
 		"aux",
 		"par",
 		"number",
-		"(",
+		//"(",		/* Handle separately to discriminate odes and volterra */
 		// "table", /* This is handeled separately */
 		"wiener",
 		"global",

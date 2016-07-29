@@ -19,8 +19,14 @@ xppParser::xppParser(std::string fn)
 		/* Initialize the keyword tree for command paring */
 		initializeTree();
 
+		/* Check for incorrect brackets */
+		checkBrackets();
+
 		/* Remove all comments */
 		removeComments();
+
+		/* Remove unnecessary whitespaces */
+		removeWhitespace();
 
 		/* Expand array descriptions */
 		expandArrays();
@@ -41,6 +47,59 @@ xppParser::xppParser(std::string fn)
 	} catch (...) {
 		std::cerr << "Unexpected error\n";
 		throw;
+	}
+}
+
+/**
+ * @brief Checks whether brackets are closed properly
+ */
+void xppParser::checkBrackets() {
+	using charPos = std::pair<char, size_t>;
+	std::stack<charPos> brackets;
+	for (unsigned i=0; i < lines.size(); i++) {
+		/* Create a stack containing the individual brackets */
+		for (unsigned j=0; j < lines[i].size(); j++) {
+			switch (lines[i].at(j)) {
+			case '(':
+				brackets.push(charPos(')', j));
+				break;
+			case '{':
+				brackets.push(charPos('}', j));
+				break;
+			case '[':
+				brackets.push(charPos(']', j));
+				break;
+			case ')':
+				if (brackets.empty()) {
+					throw xppParserException(MISSING_OPENING_BRACKET, this->lines[i], i, j);
+				} else if (brackets.top().first != ')') {
+					throw xppParserException(MISSING_CLOSING_BRACKET, this->lines[i], i, brackets.top().second);
+				}
+				brackets.pop();
+				break;
+			case '}':
+				if (brackets.empty()) {
+					throw xppParserException(MISSING_OPENING_BRACKET, this->lines[i], i, j);
+				} else if (brackets.top().first != '}') {
+					throw xppParserException(MISSING_CLOSING_BRACKET, this->lines[i], i, brackets.top().second);
+				}
+				brackets.pop();
+				break;
+			case ']':
+				if (brackets.empty()) {
+					throw xppParserException(MISSING_OPENING_BRACKET, this->lines[i], i, j);
+				} else if (brackets.top().first != ']') {
+					throw xppParserException(MISSING_CLOSING_BRACKET, this->lines[i], i, brackets.top().second);
+				}
+				brackets.pop();
+				break;
+			default:
+				continue;
+			}
+		}
+		if (!brackets.empty()) {
+			throw xppParserException(MISSING_CLOSING_BRACKET, this->lines[i], i, brackets.top().second);
+		}
 	}
 }
 
@@ -66,11 +125,9 @@ void xppParser::expandArrays() {
 			pos2 = lines[i].find("..");
 			pos3 = lines[i].find("]");
 			if (pos3 == std::string::npos) {
-				throw xppParserException(MISSING_BRACKET, this->lines[i], i, pos1);
-			} else if (pos2 != std::string::npos)  {
-				if (pos2 > pos3) {
-					throw xppParserException(WRONG_ARRAY_ASSIGNMENT, this->lines[i], i, pos2);
-				}
+				throw xppParserException(MISSING_CLOSING_BRACKET, this->lines[i], i, pos1);
+			} else if (pos2 != std::string::npos && pos2 > pos3) {
+				throw xppParserException(WRONG_ARRAY_ASSIGNMENT, this->lines[i], i, pos2);
 			}
 
 			/* Determine the range of the indices of the array */
@@ -184,45 +241,93 @@ void xppParser::expandArrayLines(std::vector<std::string>& lines,
 /**
  * @brief Extract definitions within the ode file
  *
+ * This extracts definitions that are given in the keyword list and are marked
+ * by an equal sign.
  */
 void xppParser::extractDefinitions(void) {
 	unsigned i = 0;
 	while(i < lines.size()) {
 		std::string  keyword;
 		/* Any definition is marked by the equal sign */
-		std::size_t pos1;
-		std::size_t pos2 = lines[i].find("=");
+		std::size_t pos1 = lines[i].find("=");
+		std::size_t pos2;
 
 		/* If this function is reached every other valid statement should be
 		 * handeled, so bail out if we do not find an assignment.
 		 */
-		if (pos2 == std::string::npos) {
-			pos1 = lines[i].find("done");
-			if (pos1 == std::string::npos) {
+		if (pos1 == std::string::npos) {
+			pos2 = lines[i].find("done");
+			if (pos2 == std::string::npos) {
 				throw xppParserException(UNKNOWN_ASSIGNMENT, this->lines[i], i, 0);
 			} else {
 				lines.erase(lines.begin()+i);
 			}
 		}
 
-		/* For simplicity remove all whitespaces between an equal sign and the
-		 * preceding word.
+		/* Extract the keyword. In most cases it should be the first consequtive
+		 * string that precedes a whitespace and is followed by the name of the
+		 * variable.
 		 */
-		while (pos2 != std::string::npos) {
-			pos1 = lines[i].find_last_not_of(" \t\f\v\r", pos2-1);
-			if (pos1 != pos2-1) {
-				lines[i].erase(pos1+1, pos2-pos1-1);
-			}
-			pos2 = lines[i].find("=", pos2+1);
-		}
+		while (pos1 != std::string::npos) {
+			pos2 = lines[i].find_first_of(" \t\f\v\r");
+			keyword = lines[i].substr(0, pos2);
+			auto result = keywordTree.parse_text(keyword);
+			/* A keyword was found */
+			if (result.size() == 1) {
+				std::string optName;
+				if (result.at(0).get_keyword() == keywords[0]) {
+					/* !Name */
+					optName = lines[i].substr(pos2+2, pos1-1);
+				} else if (result.at(0).get_keyword() == keywords[1] ||
+						   result.at(0).get_keyword() == keywords[2]) {
+					/* Name(t+1) or Name' */
+					optName = lines[i].substr(0, result.at(0).get_start());
+				} else if (result.at(0).get_keyword() == keywords[3]) {
+					/* dName/dt */
+					optName = lines[i].substr(1, result.at(0).get_start()-1);
+					std::cout << optName << std::endl;
+					std::cout << lines[i] << std::endl;
+				} else if (result.at(0).get_keyword() == keywords[4]) {
+					/* Name(t) */
+					optName = lines[i].substr(0, result.at(0).get_start());
+				} else if (result.at(0).get_keyword() == keywords[5]) {
+					/* volterra Name */
+					optName = lines[i].substr(pos2+1, pos1);
+					//std::cout << optName << std::endl;
 
-		pos2 = lines[i].find("=");
-		while (pos2 != std::string::npos) {
-			std::size_t pos1 = lines[i].find_first_of(" \t\f\v\r");
-			keyword = lines[i].substr(0, pos1-1);
-			std::cout << pos1 << "\t"
-					  << keyword << std::endl;
-			pos2 = lines[i].find("=", pos2+1);
+				} else if (result.at(0).get_keyword() == keywords[6]) {
+
+				} else if (result.at(0).get_keyword() == keywords[7]) {
+
+				} else if (result.at(0).get_keyword() == keywords[8]) {
+
+				} else if (result.at(0).get_keyword() == keywords[9]) {
+
+				} else if (result.at(0).get_keyword() == keywords[10]) {
+
+				} else if (result.at(0).get_keyword() == keywords[11]) {
+
+				} else if (result.at(0).get_keyword() == keywords[12]) {
+
+				} else if (result.at(0).get_keyword() == keywords[13]) {
+
+				} else if (result.at(0).get_keyword() == keywords[14]) {
+
+				} else if (result.at(0).get_keyword() == keywords[15]) {
+
+				} else if (result.at(0).get_keyword() == keywords[16]) {
+
+				} else if (result.at(0).get_keyword() == keywords[17]) {
+
+				} else if (result.at(0).get_keyword() == keywords[18]) {
+
+				}
+			} else {
+				/* This can only be a function or expression definition that may
+				 * contain parts of keywords.
+				 */
+			}
+			pos1 = lines[i].find("=", pos1+1);
 		}
 		i++;
 	}
@@ -356,5 +461,45 @@ void xppParser::removeComments() {
 		} else {
 			i++;
 		}
+	}
+}
+
+/**
+ * @brief Removes unneeded whitespaces
+ *
+ * This function searches for whitespaces within parentheses or before/after an
+ * equal sign and removes those.
+ */
+void xppParser::removeWhitespace() {
+	unsigned i=0;
+	while(i < lines.size()) {
+		std::size_t pos1, pos2, pos3;
+		/* Search for opening brackets */
+		pos1 = lines[i].find("(");
+		if (pos1 != std::string::npos) {
+			/* Search for the closing bracket remove all whitespaces between */
+			pos2 = lines[i].find(")");
+			pos3 = lines[i].find_first_of(" \t\f\v\r", pos1);
+			while (pos3 < pos2) {
+				lines[i].erase(pos3, pos2-pos3);
+				pos3 = lines[i].find_first_of(" \t\f\v\r", pos1);
+			}
+		}
+
+		/* Search around the equal signs */
+		pos1 = lines[i].find("=");
+		if (pos1 != std::string::npos) {
+			/* Search for whitspace after equal sign */
+			pos2 = lines[i].find_first_not_of(" \t\f\v\r", pos1+1);
+			if (pos2 != pos1+1) {
+				lines[i].erase(pos1+1, pos2-pos1-1);
+			}
+			/* Search for whitspace before equal sign */
+			pos2 = lines[i].find_last_not_of(" \t\f\v\r", pos1-1);
+			if (pos2 != pos1-1) {
+				lines[i].erase(pos2+1, pos1-pos2-1);
+			}
+		}
+		i++;
 	}
 }

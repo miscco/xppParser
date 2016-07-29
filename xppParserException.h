@@ -7,8 +7,8 @@
 
 /* Different parser errors */
 enum xppParserError {
-	MISSING_BRACKET,
-	MISSING_PARENTHESES,
+	MISSING_CLOSING_BRACKET,
+	MISSING_OPENING_BRACKET,
 	NO_NUMBER,
 	UNKNOWN_ASSIGNMENT,
 	WRONG_ARRAY_ASSIGNMENT,
@@ -26,11 +26,11 @@ public:
 								const size_t pos)
 	{
 		switch (msgType) {
-		case MISSING_BRACKET:
+		case MISSING_CLOSING_BRACKET:
 			m_msg = std::string("Cannot find closing bracket");
 			break;
-		case MISSING_PARENTHESES:
-			m_msg = std::string("Cannot find closing parentheses");
+		case MISSING_OPENING_BRACKET:
+			m_msg = std::string("Cannot find opening bracket");
 			break;
 		case NO_NUMBER:
 			m_msg = std::string("Cannot parse number");
@@ -47,7 +47,7 @@ public:
 		}
 		m_msg += " in line " + std::to_string(lineNumber+1) + ":\n";
 		m_msg += line + "\n";
-		m_msg += pos == 0 ? "^^^\n" : std::string(pos-1, ' ') + "^^^\n";
+		m_msg += std::string(pos, ' ') + "^\n";
 	}
 
 	virtual const char* what() const throw()
