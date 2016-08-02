@@ -17,7 +17,7 @@ xppParser::xppParser(std::string fn)
 		/* Initially read in the ode file */
 		readFile();
 
-		/* Initialize the keyword tree for command paring */
+		/* Initialize the keyword tree for command parsing */
 		initializeTree();
 
 		/* Check for incorrect brackets */
@@ -40,7 +40,6 @@ xppParser::xppParser(std::string fn)
 
 		/* Extract all other definitions */
 		extractDefinitions();
-
 
 		/* Debug output */
 		for(unsigned i = 0; i < lines.size(); ++i) {
