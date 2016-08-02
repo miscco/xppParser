@@ -5,9 +5,10 @@
  *
  * @param fn string representing the file name of the ode file
  *
- * The constructs the parser object from a given ode file. First unneeded
- * content is discarded, then arrays are expanded. Finally the different
- * keywords are parsed and put into the opts arrays.
+ * This constructs the parser object of a given ode file. First unneeded
+ * content is discarded, and a basic correctness check is don. Later arrays are
+ * expanded and special constructs like markov processes and tables are handled.
+ * Finally the different keywords are parsed and put into the opts arrays.
  */
 xppParser::xppParser(std::string fn)
 	: fileName(fn)
@@ -57,7 +58,8 @@ void xppParser::checkBrackets() {
 	using charPos = std::pair<char, size_t>;
 	std::stack<charPos> brackets;
 	for (unsigned i=0; i < lines.size(); i++) {
-		/* Create a stack containing the individual brackets */
+		/* Create a stack containing the individual brackets and their position
+		 */
 		for (unsigned j=0; j < lines[i].size(); j++) {
 			switch (lines[i].at(j)) {
 			case '(':
@@ -71,25 +73,31 @@ void xppParser::checkBrackets() {
 				break;
 			case ')':
 				if (brackets.empty()) {
-					throw xppParserException(MISSING_OPENING_BRACKET, this->lines[i], i, j);
+					throw xppParserException(MISSING_OPENING_BRACKET, lines[i],
+											 i, j);
 				} else if (brackets.top().first != ')') {
-					throw xppParserException(MISSING_CLOSING_BRACKET, this->lines[i], i, brackets.top().second);
+					throw xppParserException(MISSING_CLOSING_BRACKET, lines[i],
+											 i, brackets.top().second);
 				}
 				brackets.pop();
 				break;
 			case '}':
 				if (brackets.empty()) {
-					throw xppParserException(MISSING_OPENING_BRACKET, this->lines[i], i, j);
+					throw xppParserException(MISSING_OPENING_BRACKET, lines[i],
+											 i, j);
 				} else if (brackets.top().first != '}') {
-					throw xppParserException(MISSING_CLOSING_BRACKET, this->lines[i], i, brackets.top().second);
+					throw xppParserException(MISSING_CLOSING_BRACKET, lines[i],
+											 i, brackets.top().second);
 				}
 				brackets.pop();
 				break;
 			case ']':
 				if (brackets.empty()) {
-					throw xppParserException(MISSING_OPENING_BRACKET, this->lines[i], i, j);
+					throw xppParserException(MISSING_OPENING_BRACKET, lines[i],
+											 i, j);
 				} else if (brackets.top().first != ']') {
-					throw xppParserException(MISSING_CLOSING_BRACKET, this->lines[i], i, brackets.top().second);
+					throw xppParserException(MISSING_CLOSING_BRACKET, lines[i],
+											 i, brackets.top().second);
 				}
 				brackets.pop();
 				break;
@@ -98,7 +106,8 @@ void xppParser::checkBrackets() {
 			}
 		}
 		if (!brackets.empty()) {
-			throw xppParserException(MISSING_CLOSING_BRACKET, this->lines[i], i, brackets.top().second);
+			throw xppParserException(MISSING_CLOSING_BRACKET, lines[i],
+									 i, brackets.top().second);
 		}
 	}
 }
@@ -120,14 +129,15 @@ void xppParser::expandArrays() {
 
 		if (pos1 != std::string::npos) {
 			/* Search for the closing bracket and the dots between the start and
-			 * the end indices
+			 * the end indices. The dots are only necessary for single line
+			 * statements.
 			 */
 			pos2 = lines[i].find("..");
 			pos3 = lines[i].find("]");
 			if (pos3 == std::string::npos) {
-				throw xppParserException(MISSING_CLOSING_BRACKET, this->lines[i], i, pos1);
+				throw xppParserException(MISSING_CLOSING_BRACKET, lines[i], i, pos1);
 			} else if (pos2 != std::string::npos && pos2 > pos3) {
-				throw xppParserException(WRONG_ARRAY_ASSIGNMENT, this->lines[i], i, pos2);
+				throw xppParserException(WRONG_ARRAY_ASSIGNMENT, lines[i], i, pos2);
 			}
 
 			/* Determine the range of the indices of the array */
@@ -135,12 +145,12 @@ void xppParser::expandArrays() {
 			try {
 				start = std::stoi(lines[i].substr(pos1+1, pos2-pos1-1));
 			} catch (std::invalid_argument) {
-				throw xppParserException(NO_NUMBER, this->lines[i], i, pos1+1);
+				throw xppParserException(EXPECTED_NUMBER, lines[i], i, pos1+1);
 			}
 			try {
 				end = std::stoi(lines[i].substr(pos2+2, pos3-pos2-2));
 			} catch (std::invalid_argument) {
-				throw xppParserException(NO_NUMBER, this->lines[i], i, pos2+2);
+				throw xppParserException(EXPECTED_NUMBER, lines[i], i, pos2+2);
 			}
 
 			/* Copy the lines of the assignment into a separate vector */
@@ -170,7 +180,7 @@ void xppParser::expandArrays() {
 
 			/* Expand the lines */
 			std::vector<std::string> arrayLines;
-			for (int i=start; i<=end; i++) {
+			for (int i = start; i <= end; i++) {
 				expandArrayLines(arrayLines, arrayExpressions, i);
 			}
 			/* Insert the new lines back into the old position */
@@ -258,7 +268,7 @@ void xppParser::extractDefinitions(void) {
 		if (pos1 == std::string::npos) {
 			pos2 = lines[i].find("done");
 			if (pos2 == std::string::npos) {
-				throw xppParserException(UNKNOWN_ASSIGNMENT, this->lines[i], i, 0);
+				throw xppParserException(UNKNOWN_ASSIGNMENT, lines[i], i, 0);
 			} else {
 				lines.erase(lines.begin()+i);
 			}
@@ -361,13 +371,13 @@ void xppParser::extractMarkov(void) {
 				try {
 					nstates = std::stoi(lines[i].substr(pos1, lines[i].back()));
 				} catch (std::invalid_argument) {
-					throw xppParserException(NO_NUMBER, this->lines[i], i, pos1);
+					throw xppParserException(EXPECTED_NUMBER, lines[i], i, pos1);
 				}
 			} else {
 				try {
 					nstates = std::stoi(lines[i].substr(pos1, pos2-pos1));
 				} catch (std::invalid_argument) {
-					throw xppParserException(NO_NUMBER, this->lines[i], i, pos1);
+					throw xppParserException(EXPECTED_NUMBER, lines[i], i, pos1);
 				}
 			}
 			/* Store the number of states for convenience */
@@ -382,7 +392,7 @@ void xppParser::extractMarkov(void) {
 					pos2 = lines[i+1].find("}", pos1);
 					if (pos1 == std::string::npos ||
 						pos2 == std::string::npos) {
-						throw xppParserException(WRONG_MARKOV_ASSIGNMENT, this->lines[i+1], i+1, pos1);
+						throw xppParserException(WRONG_MARKOV_ASSIGNMENT, lines[i+1], i+1, pos1);
 					}
 					opt.Args.push_back(lines[i+j].substr(pos1+1, pos2-pos1-1));
 				}
@@ -396,7 +406,7 @@ void xppParser::extractMarkov(void) {
 }
 
 /**
- * @brief Initializes the keyword tree from the keywords
+ * @brief Initializes the keyword tree from the keyword list
  */
 void xppParser::initializeTree (void) {
 	for (size_t i=0; i < keywords.size(); i++) {
@@ -405,9 +415,10 @@ void xppParser::initializeTree (void) {
 }
 
 /**
- * @brief Reads in the ode file and stores it in a vector
+ * @brief Reads in the ode file and stores the lines in a vector
  *
- * The function ignores empty lines as well lines containing only whitespace
+ * This function reads in the ode file given by fileName, ignoring empty lines
+ * as well lines containing only whitespace.
  */
 void xppParser::readFile(void) {
 	/* Open file for parsing */

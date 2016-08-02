@@ -9,7 +9,7 @@
 enum xppParserError {
 	MISSING_CLOSING_BRACKET,
 	MISSING_OPENING_BRACKET,
-	NO_NUMBER,
+	EXPECTED_NUMBER,
 	UNKNOWN_ASSIGNMENT,
 	WRONG_ARRAY_ASSIGNMENT,
 	WRONG_MARKOV_ASSIGNMENT
@@ -32,7 +32,7 @@ public:
 		case MISSING_OPENING_BRACKET:
 			m_msg = std::string("Cannot find opening bracket");
 			break;
-		case NO_NUMBER:
+		case EXPECTED_NUMBER:
 			m_msg = std::string("Cannot parse number");
 			break;
 		case UNKNOWN_ASSIGNMENT:
