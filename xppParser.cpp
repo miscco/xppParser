@@ -8,7 +8,7 @@
  * This constructs the parser object of a given ode file. First unneeded
  * content is discarded, and a basic correctness check is don. Later arrays are
  * expanded and special constructs like markov processes and tables are handled.
- * Finally the different keywords are parsed and put into the opts arrays.
+ * Finally, the different keywords are parsed and put into the opts arrays.
  */
 xppParser::xppParser(std::string fn)
 	: fileName(fn)
@@ -16,11 +16,6 @@ xppParser::xppParser(std::string fn)
 	try {
 		/* Initially read in the ode file */
 		readFile();
-
-		/* Debug output */
-		for(unsigned i = 0; i < lines.size(); ++i) {
-			//std::cout << lines[i] << "!" << std::endl;
-		}
 
 		/* Initialize the keyword tree for command paring */
 		initializeTree();
@@ -45,6 +40,12 @@ xppParser::xppParser(std::string fn)
 
 		/* Extract all other definitions */
 		extractDefinitions();
+
+
+		/* Debug output */
+		for(unsigned i = 0; i < lines.size(); ++i) {
+			std::cout << lines[i] << std::endl;
+		}
 
 		/* Catch errors */
 	} catch (xppParserException& e) {
@@ -164,7 +165,7 @@ void xppParser::expandArrays() {
 			/* Copy the lines of the assignment into a separate vector */
 			std::vector<std::string> arrayExpressions;
 			int numLines = 1;
-			if (lines[i].compare(pos1-1, 1, "%") == 0) {
+			if (lines[i].substr(pos1-1, 1) == "%") {
 				/* Multiline statements end with a line with a single "%" */
 				while (true) {
 					size_t endArray = lines[i+numLines].find("%");
@@ -186,11 +187,12 @@ void xppParser::expandArrays() {
 			/* Remove the old lines */
 			lines.erase(lines.begin()+i, lines.begin()+i+numLines);
 
-			/* Expand the lines */
+			/* Expand the array expressions */
 			std::vector<std::string> arrayLines;
 			for (int i = start; i <= end; i++) {
 				expandArrayLines(arrayLines, arrayExpressions, i);
 			}
+
 			/* Insert the new lines back into the old position */
 			lines.insert(lines.begin()+i, arrayLines.begin(), arrayLines.end());
 		} else {

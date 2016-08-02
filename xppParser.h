@@ -53,7 +53,7 @@ private:
 		"'",
 		"/dt",
 		"(t)",
-		"volterra",
+		"volt",
 		// "markov", /* Handled separately */
 		"aux",
 		"par",
