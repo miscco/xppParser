@@ -25,8 +25,6 @@ class xppParser {
 public:
 	xppParser(std::string);
 
-	/* Vector containing the individual lines from the ode file */
-	std::vector<std::string> lines;
 private:
 	void checkBrackets		(void);
 	void expandArrays		(void);
@@ -43,6 +41,9 @@ private:
 
 	/* Filename of the ode file */
 	std::string				 fileName;
+
+	/* Vector containing the individual lines from the ode file */
+	std::vector<std::string> lines;
 
 	/* Keywords utilized in the ode file */
 	const std::vector<std::string> keywords = {

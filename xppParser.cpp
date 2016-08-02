@@ -38,6 +38,11 @@ xppParser::xppParser(std::string fn)
 		/* Extract all other definitions */
 		extractDefinitions();
 
+		/* Debug output */
+		for(unsigned i = 0; i < lines.size(); ++i) {
+			//std::cout << lines[i] << std::endl;
+		}
+
 		/* Catch errors */
 	} catch (xppParserException& e) {
 		std::cerr << e.what();
