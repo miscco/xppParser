@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <fstream>
+#include <regex>
 #include <stack>
 #include <string>
 #include <vector>
@@ -33,7 +34,7 @@ private:
 							 int idx);
 	void extractDefinitions	(void);
 	void extractMarkov		(void);
-	int  getKeywordCode		(std::string key);
+	void extractWiener		(void);
 	void initializeTree		(void);
 	void readFile			(void);
 	void removeComments		(void);
@@ -53,13 +54,13 @@ private:
 		"/dt",
 		"(t)",
 		"volterra",
-		// "markov", /* This is handeled separately */
+		// "markov", /* Handled separately */
 		"aux",
 		"par",
 		"number",
-		//"(",		/* Handle separately to discriminate odes and volterra */
-		// "table", /* This is handeled separately */
-		"wiener",
+		//"(",		/* Handled separately to discriminate odes and volterra */
+		//"table",  /* This is handeled separately */
+		//"wiener", /* Handled separately */
 		"global",
 		"init",
 		"(0)",
@@ -83,6 +84,7 @@ private:
 	optsArray Markov;
 	optsArray Parameter;
 	optsArray Settings;
+	opts	  Wiener;
 };
 
 #endif // PARSER_H

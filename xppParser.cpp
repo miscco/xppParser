@@ -17,6 +17,11 @@ xppParser::xppParser(std::string fn)
 		/* Initially read in the ode file */
 		readFile();
 
+		/* Debug output */
+		for(unsigned i = 0; i < lines.size(); ++i) {
+			//std::cout << lines[i] << "!" << std::endl;
+		}
+
 		/* Initialize the keyword tree for command paring */
 		initializeTree();
 
@@ -32,16 +37,14 @@ xppParser::xppParser(std::string fn)
 		/* Expand array descriptions */
 		expandArrays();
 
-		/* Extract markove processes */
+		/* Extract markov processes */
 		extractMarkov();
+
+		/* Extract wiener processes */
+		extractWiener();
 
 		/* Extract all other definitions */
 		extractDefinitions();
-
-		/* Debug output */
-		for(unsigned i = 0; i < lines.size(); ++i) {
-			//std::cout << lines[i] << std::endl;
-		}
 
 		/* Catch errors */
 	} catch (xppParserException& e) {
@@ -287,55 +290,80 @@ void xppParser::extractDefinitions(void) {
 			pos2 = lines[i].find_first_of(" \t\f\v\r");
 			keyword = lines[i].substr(0, pos2);
 			auto result = keywordTree.parse_text(keyword);
-			/* A keyword was found */
+			/* A keyword was found  extract its name and values */
 			if (result.size() == 1) {
 				std::string optName;
 				if (result.at(0).get_keyword() == keywords[0]) {
 					/* !Name */
-					optName = lines[i].substr(pos2+2, pos1-1);
+					optName = lines[i].substr(1, pos1-1);
 				} else if (result.at(0).get_keyword() == keywords[1] ||
 						   result.at(0).get_keyword() == keywords[2]) {
 					/* Name(t+1) or Name' */
 					optName = lines[i].substr(0, result.at(0).get_start());
+
 				} else if (result.at(0).get_keyword() == keywords[3]) {
 					/* dName/dt */
 					optName = lines[i].substr(1, result.at(0).get_start()-1);
-					std::cout << optName << std::endl;
-					std::cout << lines[i] << std::endl;
+
 				} else if (result.at(0).get_keyword() == keywords[4]) {
 					/* Name(t) */
 					optName = lines[i].substr(0, result.at(0).get_start());
+
 				} else if (result.at(0).get_keyword() == keywords[5]) {
 					/* volterra Name */
-					optName = lines[i].substr(pos2+1, pos1);
-					//std::cout << optName << std::endl;
+					optName = lines[i].substr(pos2+1, pos1-pos2-1);
 
 				} else if (result.at(0).get_keyword() == keywords[6]) {
+					/* aux Name */
+					optName = lines[i].substr(pos2+1, pos1-pos2-1);
 
 				} else if (result.at(0).get_keyword() == keywords[7]) {
+					/* par Name */
+					optName = lines[i].substr(pos2+1, pos1-pos2-1);
 
 				} else if (result.at(0).get_keyword() == keywords[8]) {
+					/* number Name */
+					optName = lines[i].substr(pos2+1, pos1-pos2-1);
 
 				} else if (result.at(0).get_keyword() == keywords[9]) {
+					/* wiener Name1 Name2 ...*/
+					optName = lines[i].substr(pos2+1, pos1-pos2-1);
 
 				} else if (result.at(0).get_keyword() == keywords[10]) {
+					/* global Name */
+					optName = lines[i].substr(pos2+1, pos1-pos2-1);
 
 				} else if (result.at(0).get_keyword() == keywords[11]) {
+					/* init Name */
+					optName = lines[i].substr(pos2+1, pos1-pos2-1);
 
 				} else if (result.at(0).get_keyword() == keywords[12]) {
+					/* Name(0) */
+					optName = lines[i].substr(0, result.at(0).get_start());
 
 				} else if (result.at(0).get_keyword() == keywords[13]) {
+					/* bdry Name */
+					optName = lines[i].substr(pos2+1, pos1-pos2-1);
 
 				} else if (result.at(0).get_keyword() == keywords[14]) {
+					/* 0= Expression */
+					optName = lines[i].substr(pos2+1, pos1-pos2-1);
 
 				} else if (result.at(0).get_keyword() == keywords[15]) {
+					/* solve Name */
+					optName = lines[i].substr(pos2+1, pos1-pos2-1);
 
 				} else if (result.at(0).get_keyword() == keywords[16]) {
+					/* special Name */
+					optName = lines[i].substr(pos2+1, pos1-pos2-1);
 
 				} else if (result.at(0).get_keyword() == keywords[17]) {
+					/* set Name */
+					optName = lines[i].substr(pos2+1, pos1-pos2-1);
 
 				} else if (result.at(0).get_keyword() == keywords[18]) {
-
+					/* @ Name */
+					optName = lines[i].substr(pos2+1, pos1-pos2-1);
 				}
 			} else {
 				/* This can only be a function or expression definition that may
@@ -364,8 +392,7 @@ void xppParser::extractMarkov(void) {
 			opts opt;
 			int nstates;
 
-			pos1 = lines[i].find_first_of(" ", pos1);
-			pos1 = lines[i].find_first_not_of(" ", pos1+1);
+			pos1 = lines[i].find_first_not_of(" ", pos1+6);
 			pos2 = lines[i].find_first_of(" ", pos1);
 			opt.Name = lines[i].substr(pos1, pos2-pos1);
 
@@ -390,14 +417,13 @@ void xppParser::extractMarkov(void) {
 
 			/* Parse the transition probabilities */
 			for (int j=0; j < nstates; j++) {
-				pos1 = 0;
 				pos2 = 0;
 				for (int k=0; k < nstates; k++) {
 					pos1 = lines[i+1].find("{", pos2);
 					pos2 = lines[i+1].find("}", pos1);
-					if (pos1 == std::string::npos ||
-						pos2 == std::string::npos) {
-						throw xppParserException(WRONG_MARKOV_ASSIGNMENT, lines[i+1], i+1, pos1);
+					if (pos1 == std::string::npos) {
+						throw xppParserException(WRONG_MARKOV_ASSIGNMENT,
+												 lines[i+1], i+1, pos1);
 					}
 					opt.Args.push_back(lines[i+j].substr(pos1+1, pos2-pos1-1));
 				}
@@ -408,6 +434,34 @@ void xppParser::extractMarkov(void) {
 			i++;
 		}
 	}
+}
+
+/**
+ * @brief Extracts wiener processes
+ *
+ * This function extracts the definition of wiener processes as their definition
+ * does not contain an equal sign but only the names of the individual proceses.
+ */
+void xppParser::extractWiener(void) {
+	unsigned i = 0;
+	while(i < lines.size()) {
+		std::size_t pos1 = lines[i].find("wiener");
+		std::size_t pos2 = lines[i].find_first_of(" ", pos1);
+		if (pos1 != std::string::npos) {
+			pos1 = lines[i].find_first_not_of(" ", pos2);
+			pos2 = lines[i].find_first_of(" ", pos1);
+			while (pos1 != std::string::npos) {
+				Wiener.Args.push_back(lines[i].substr(pos1, pos2-pos1));
+				pos1 = lines[i].find_first_not_of(" ", pos2);
+				pos2 = lines[i].find_first_of(" ", pos1);
+				std::cout << Wiener.Args.back() << std::endl;
+			}
+			lines.erase(lines.begin() + i);
+		} else {
+			i++;
+		}
+	}
+
 }
 
 /**
@@ -423,7 +477,8 @@ void xppParser::initializeTree (void) {
  * @brief Reads in the ode file and stores the lines in a vector
  *
  * This function reads in the ode file given by fileName, ignoring empty lines
- * as well lines containing only whitespace.
+ * as well lines containing only whitespace. Furthermore it trims and truncates
+ * all whitespaces.
  */
 void xppParser::readFile(void) {
 	/* Open file for parsing */
@@ -435,8 +490,15 @@ void xppParser::readFile(void) {
 	/* Parse in nonempty lines */
 	std::string temp;
 	while(getline(fileStream, temp)) {
-		size_t pos = temp.find_first_not_of(" ");
-		if (temp.length() != 0 && pos != std::string::npos) {
+		size_t pos1 = temp.find_first_not_of(" \t\f\v\r\n");
+		if (temp.length() != 0 && pos1 != std::string::npos) {
+			/* Remove trailing and superflous whitespaces */
+			temp.erase(0, pos1);
+			temp.resize(temp.find_last_not_of(" \t\f\v\r\n")+1);
+			auto last = std::unique(temp.begin(), temp.end(),
+						[](char l, char r){return std::isspace(l) &&
+												  std::isspace(r);});
+			temp.erase(last, temp.end());
 			lines.push_back(temp);
 		}
 	}
@@ -457,9 +519,7 @@ void xppParser::removeComments() {
 	unsigned i = 0;
 	while(i < lines.size()) {
 		std::size_t pos1 = lines[i].find("#");
-		std::size_t pos2 = lines[i].find_first_not_of(" \t\f\v\r\n");
-		std::size_t pos3 = lines[i].find_last_not_of(" \t\f\v\r\n");
-		if (pos1 == 0 || pos1 == pos2) {
+		if (pos1 == 0) {
 			lines.erase(lines.begin() + i);
 		} else if (pos1 != std::string::npos) {
 			/* Check if this is the definition of a convolutional integral
@@ -470,9 +530,6 @@ void xppParser::removeComments() {
 			if (subpos1 == std::string::npos || subpos2 < pos1) {
 				lines[i].resize(pos1);
 			}
-			i++;
-		} else if (pos3 != lines[i].size()-1) {
-			lines[i].resize(pos3);
 			i++;
 		} else {
 			i++;

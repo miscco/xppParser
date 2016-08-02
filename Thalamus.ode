@@ -1,7 +1,7 @@
 #Thalamic model
 param g_LK=0.0, g_h=0.025
  
-  #Time constants for excitatory and inhibitory neurons in ms
+  #Time constants for excitatory and inhibitory neurons in ms    
 !tau=20
 
 #Conductances 
@@ -18,10 +18,14 @@ x[1..4]'=-x[j]+[j]
 !N_rt=5
 !N_rr=25
 
+aux test = N_rr+N_tr
+
 %[1..4]
 x[j]'=-y[j]-x[j-1]
 y[j]'=x[j]
 %
+
+wiener Stoch1 Stoch2 Stoch3 Stoch4
 
 #Calcium dynamic
 !alpha_Ca=-51.8E-6
@@ -39,7 +43,7 @@ y[j]'=x[j]
 #Functions
 #Firing rates
 Qt(Vt   )=Q_max/(1+exp(-C*(Vt-theta)/sigma))
-Qr(Vr)=Q_max / (1+exp(-C*(Vr-theta)/sigma))
+Qr(Vr)=Q_max   / (1+exp(-C*(Vr-theta)/sigma))
 
 #Activation functions
 m_inf_T_t(Vt)=1/(1+exp(-(Vt+59)/6.2))
