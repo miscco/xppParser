@@ -45,7 +45,9 @@ private:
 	void removeWhitespace	(void);
 
 	/* Helper functions */
-	std::string findWord (const std::string& line, size_t& pos1, size_t& pos2);
+	std::string findNextWord (const std::string& line,
+							  size_t& pos1,
+							  size_t& pos2);
 
 	/* Filename of the ode file */
 	std::string				 fileName;
