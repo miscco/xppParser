@@ -439,10 +439,11 @@ void xppParser::extractTable(void) {
 			/* Parse the name */
 			opt.Name = findNextWord(lines[i], pos1, pos2);
 
-			/* If the table has to be calculated there is a % sign */
-			std::string key = findNextWord(lines[i], pos1, pos2);
-			if (key == "%") {
-
+			/* If the table has to be calculated there is a % sign instead of a
+			 * filename
+			 */
+			std::string fn = findNextWord(lines[i], pos1, pos2);
+			if (fn == "%") {
 				/* Get the number of points */
 				try {
 					npoints = std::stoi(findNextWord(lines[i], pos1, pos2));
@@ -464,7 +465,7 @@ void xppParser::extractTable(void) {
 					throw xppParserException(EXPECTED_NUMBER, lines[i], i, pos1);
 				}
 
-				/* Calculate the intermidiant points */
+				/* Calculate the intermediant points */
 				double dx = (xHigh - xLow)/(npoints-1);
 				std::vector<double> points(npoints);
 				for(unsigned j = 0; j < npoints; j++) {
@@ -487,7 +488,7 @@ void xppParser::extractTable(void) {
 					throw xppParserException(WRONG_TABLE_ASSIGNMENT, lines[i], i, pos1);
 				}
 			} else {
-				std::string fn = key;
+
 			}
 			Tables.push_back(opt);
 			lines.erase(lines.begin() + i);
@@ -517,7 +518,6 @@ void xppParser::extractWiener(void) {
 			i++;
 		}
 	}
-
 }
 
 /**
@@ -635,15 +635,15 @@ void xppParser::removeWhitespace() {
 		/* Search around the equal signs */
 		pos1 = lines[i].find("=");
 		if (pos1 != std::string::npos) {
-			/* Search for whitspace after equal sign */
-			pos2 = lines[i].find_first_not_of(" \t\f\v\r", pos1+1);
-			if (pos2 != pos1+1) {
-				lines[i].erase(pos1+1, pos2-pos1-1);
-			}
 			/* Search for whitspace before equal sign */
 			pos2 = lines[i].find_last_not_of(" \t\f\v\r", pos1-1);
 			if (pos2 != pos1-1) {
 				lines[i].erase(pos2+1, pos1-pos2-1);
+			}
+			/* Search for whitspace after equal sign */
+			pos2 = lines[i].find_first_not_of(" \t\f\v\r", pos1+1);
+			if (pos2 != pos1+1) {
+				lines[i].erase(pos1+1, pos2-pos1-1);
 			}
 		}
 		i++;

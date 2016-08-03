@@ -12,7 +12,6 @@ SOURCES +=	main.cpp \
 HEADERS +=	xppParser.h \
 			xppParserException.h
 
-
 PRECOMPILED_HEADER += aho_corasick/aho_corasick.hpp
 
 QMAKE_CXXFLAGS += -std=c++11
