@@ -25,6 +25,8 @@ x[j]'=-y[j]-x[j-1]
 y[j]'=x[j]
 %
 
+table h % 101 0 6.283 sin(t)+.6+.4*cos(t)+.2*sin(2*t)
+
 wiener Stoch1 Stoch2 Stoch3 Stoch4
 
 #Calcium dynamic

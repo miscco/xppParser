@@ -12,7 +12,10 @@
 #include "xppParserException.h"
 
 #include "aho_corasick/aho_corasick.hpp"
-//#include "exprtk/exprtk.hpp"
+#include "mpParser.h"
+#include "mpDefines.h"
+#include "mpTest.h"
+
 
 typedef struct {
 	std::string					Name;
@@ -34,11 +37,15 @@ private:
 							 int idx);
 	void extractDefinitions	(void);
 	void extractMarkov		(void);
+	void extractTable		(void);
 	void extractWiener		(void);
 	void initializeTree		(void);
 	void readFile			(void);
 	void removeComments		(void);
 	void removeWhitespace	(void);
+
+	/* Helper functions */
+	std::string findWord (const std::string& line, size_t& pos1, size_t& pos2);
 
 	/* Filename of the ode file */
 	std::string				 fileName;
@@ -81,10 +88,11 @@ private:
 	optsArray Equations;
 	optsArray Functions;
 	optsArray InitConds;
-	optsArray Markov;
-	optsArray Parameter;
+	optsArray Markovs;
+	optsArray Parameters;
 	optsArray Settings;
-	opts	  Wiener;
+	optsArray Tables;
+	opts	  Wieners;
 };
 
 #endif // PARSER_H

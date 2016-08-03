@@ -12,7 +12,8 @@ enum xppParserError {
 	EXPECTED_NUMBER,
 	UNKNOWN_ASSIGNMENT,
 	WRONG_ARRAY_ASSIGNMENT,
-	WRONG_MARKOV_ASSIGNMENT
+	WRONG_MARKOV_ASSIGNMENT,
+	WRONG_TABLE_ASSIGNMENT
 };
 
 /* Extension of std::exception to accomodate the parsers need */
@@ -43,6 +44,9 @@ public:
 			break;
 		case WRONG_MARKOV_ASSIGNMENT:
 			m_msg = std::string("Wrong assignment of markov process");
+			break;
+		case WRONG_TABLE_ASSIGNMENT:
+			m_msg = std::string("Wrong assignment of table expression");
 			break;
 		}
 		m_msg += " in line " + std::to_string(lineNumber+1) + ":\n";

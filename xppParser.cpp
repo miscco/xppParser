@@ -35,6 +35,9 @@ xppParser::xppParser(std::string fn)
 		/* Extract markov processes */
 		extractMarkov();
 
+		/* Extract table definitions */
+		extractTable();
+
 		/* Extract wiener processes */
 		extractWiener();
 
@@ -215,39 +218,27 @@ void xppParser::expandArrays() {
 void xppParser::expandArrayLines(std::vector<std::string>& lines,
 								 const std::vector<std::string>& expressions,
 								 int idx) {
-	std::string temp;
-	size_t pos1, pos2;
-	int res;
-
-	/* Create the parser objects */
-	/* XXX: exprtk only knows double long double and float */
-	/*
-	typedef exprtk::symbol_table<double> symbol_table_t;
-	typedef exprtk::expression<double>     expression_t;
-	typedef exprtk::parser<double>             parser_t;
-
-	double j = idx;
-	symbol_table_t symbol_table;
-	symbol_table.add_variable("j", j);
-	symbol_table.add_constants();
-
-	expression_t expression;
-	expression.register_symbol_table(symbol_table);
-
-	parser_t parser;
-	*/
+	/* Initialize the parser with the variable "j" */
+	mup::ParserX parser;
+	mup::Value j((mup::int_type)idx);
+	mup::Value result;
+	parser.DefineVar("j",  mup::Variable(&j));
 	for (unsigned i=0; i < expressions.size(); i++) {
-		temp = expressions[i];
-		pos1 = temp.find("[");
-		pos2 = temp.find("]");
+		std::string temp = expressions[i];
+		size_t pos1 = temp.find("[");
+		size_t pos2 = temp.find("]");
 		while (pos1 != std::string::npos) {
 			/* Evaluate the expression within the brackets and replace the
 			 * brackets with the result.
 			 */
-			//parser.compile(temp.substr(pos1+1, pos2-pos1-1),expression);
-			//res = (int) expression.value();
-			res = idx;
-			temp.replace(pos1, pos2-pos1+1, std::to_string(res));
+			parser.SetExpr(temp.substr(pos1+1, pos2-pos1-1));
+			result = parser.Eval();
+
+			/* Check whether the result is an integer  */
+			if (result.GetType() != 'i') {
+				throw xppParserException(WRONG_ARRAY_ASSIGNMENT, lines[i], i, pos1+1);
+			}
+			temp.replace(pos1, pos2-pos1+1, std::to_string(result.GetInteger()));
 
 			/* Search for other expressions. */
 			pos1 = temp.find("[", pos2);
@@ -387,31 +378,19 @@ void xppParser::extractMarkov(void) {
 	unsigned i = 0;
 	while(i < lines.size()) {
 		std::size_t pos1 = lines[i].find("markov");
-		std::size_t pos2;
+		std::size_t pos2 = lines[i].find_first_of(" ", pos1);
 		if (pos1 != std::string::npos) {
-			/* Parse the name */
 			opts opt;
 			int nstates;
 
-			pos1 = lines[i].find_first_not_of(" ", pos1+6);
-			pos2 = lines[i].find_first_of(" ", pos1);
-			opt.Name = lines[i].substr(pos1, pos2-pos1);
+			/* Parse the name */
+			opt.Name = findWord(lines[i], pos1, pos2);
 
 			/* Parse the number of states */
-			pos1 = lines[i].find_first_not_of(" ", pos2);
-			pos2 = lines[i].find_first_of(" ", pos1);
-			if (pos2 == std::string::npos) {
-				try {
-					nstates = std::stoi(lines[i].substr(pos1, lines[i].back()));
-				} catch (std::invalid_argument) {
-					throw xppParserException(EXPECTED_NUMBER, lines[i], i, pos1);
-				}
-			} else {
-				try {
-					nstates = std::stoi(lines[i].substr(pos1, pos2-pos1));
-				} catch (std::invalid_argument) {
-					throw xppParserException(EXPECTED_NUMBER, lines[i], i, pos1);
-				}
+			try {
+				nstates = std::stoi(findWord(lines[i], pos1, pos2));
+			} catch (std::invalid_argument) {
+				throw xppParserException(EXPECTED_NUMBER, lines[i], i, pos1);
 			}
 			/* Store the number of states for convenience */
 			opt.Value = nstates;
@@ -438,6 +417,87 @@ void xppParser::extractMarkov(void) {
 }
 
 /**
+ * @brief Extract a table
+ *
+ * This function extracts a precomputed table either from a file or calculates
+ * it from the definition.
+ */
+void xppParser::extractTable(void) {
+	unsigned i = 0;
+	while(i < lines.size()) {
+		std::size_t pos1 = lines[i].find("table");
+		std::size_t pos2 = lines[i].find_first_of(" ", pos1);
+		if (pos1 != std::string::npos) {
+			opts opt;
+			unsigned npoints;
+			double xLow, xHigh;
+
+			/* Initialize the parser */
+			mup::ParserX parser;
+			mup::Value result;
+
+			/* Parse the name */
+			opt.Name = findWord(lines[i], pos1, pos2);
+
+			/* If the table has to be calculated there is a % sign */
+			std::string key = findWord(lines[i], pos1, pos2);
+			if (key == "%") {
+
+				/* Get the number of points */
+				try {
+					npoints = std::stoi(findWord(lines[i], pos1, pos2));
+				} catch (std::invalid_argument) {
+					throw xppParserException(EXPECTED_NUMBER, lines[i], i, pos1);
+				}
+
+				/* Get the bounds */
+				parser.SetExpr(findWord(lines[i], pos1, pos2));
+				try {
+					xLow = parser.Eval().GetFloat();
+				} catch (mup::ParserError) {
+					throw xppParserException(EXPECTED_NUMBER, lines[i], i, pos1);
+				}
+				parser.SetExpr(findWord(lines[i], pos1, pos2));
+				try {
+					xHigh = parser.Eval().GetFloat();
+				} catch (mup::ParserError) {
+					throw xppParserException(EXPECTED_NUMBER, lines[i], i, pos1);
+				}
+
+				/* Calculate the intermidiant points */
+				double dx = (xHigh - xLow)/(npoints-1);
+				std::vector<double> points(npoints);
+				for(unsigned j = 0; j < npoints; j++) {
+					points.at(j) = xLow + j * dx;
+				}
+
+				/* Parse the defining function */
+				mup::Value t;
+				parser.DefineVar("t",  mup::Variable(&t));
+				parser.SetExpr(findWord(lines[i], pos1, pos2));
+
+				/* Evaluate the table expression */
+				try {
+					for(unsigned j = 0; j < npoints; j++) {
+						t = (mup::float_type)points.at(j);
+						result = parser.Eval();
+						opt.Args.push_back(std::to_string(result.GetFloat()));
+					}
+				} catch (mup::ParserError) {
+					throw xppParserException(WRONG_TABLE_ASSIGNMENT, lines[i], i, pos1);
+				}
+			} else {
+				std::string fn = key;
+			}
+			Tables.push_back(opt);
+			lines.erase(lines.begin() + i);
+		} else {
+			i++;
+		}
+	}
+}
+
+/**
  * @brief Extracts wiener processes
  *
  * This function extracts the definition of wiener processes as their definition
@@ -449,13 +509,8 @@ void xppParser::extractWiener(void) {
 		std::size_t pos1 = lines[i].find("wiener");
 		std::size_t pos2 = lines[i].find_first_of(" ", pos1);
 		if (pos1 != std::string::npos) {
-			pos1 = lines[i].find_first_not_of(" ", pos2);
-			pos2 = lines[i].find_first_of(" ", pos1);
-			while (pos1 != std::string::npos) {
-				Wiener.Args.push_back(lines[i].substr(pos1, pos2-pos1));
-				pos1 = lines[i].find_first_not_of(" ", pos2);
-				pos2 = lines[i].find_first_of(" ", pos1);
-				std::cout << Wiener.Args.back() << std::endl;
+			while (pos2 != std::string::npos) {
+				Wieners.Args.push_back(findWord(lines[i], pos1, pos2));
 			}
 			lines.erase(lines.begin() + i);
 		} else {
@@ -463,6 +518,23 @@ void xppParser::extractWiener(void) {
 		}
 	}
 
+}
+
+/**
+ * @brief Finds the next whitespace separated word after pos1
+ *
+ * @par line: String we are searching in
+ * @par	pos1: Old position will be udpated
+ * @par pos2: Old position at which the search startes
+ *
+ * @return pos1: First position of the new word
+ * @return pos2: Position of the first whitespace character after the word
+ * @return word: String between [pos1, pos2-1]
+ */
+std::string xppParser::findWord(const std::string& line, size_t &pos1, size_t &pos2) {
+	pos1 = line.find_first_not_of(" ", pos2);
+	pos2 = line.find_first_of(" ", pos1);
+	return line.substr(pos1, pos2-pos1);
 }
 
 /**
@@ -497,8 +569,8 @@ void xppParser::readFile(void) {
 			temp.erase(0, pos1);
 			temp.resize(temp.find_last_not_of(" \t\f\v\r\n")+1);
 			auto last = std::unique(temp.begin(), temp.end(),
-						[](char l, char r){return std::isspace(l) &&
-												  std::isspace(r);});
+									[](char l, char r){return std::isspace(l) &&
+						std::isspace(r);});
 			temp.erase(last, temp.end());
 			lines.push_back(temp);
 		}
