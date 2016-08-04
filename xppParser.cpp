@@ -17,9 +17,6 @@ xppParser::xppParser(std::string fn)
 		/* Initially read in the ode file */
 		readFile();
 
-		/* Initialize the keyword tree for command parsing */
-		initializeTree();
-
 		/* Check for incorrect brackets */
 		checkBrackets();
 
@@ -43,6 +40,9 @@ xppParser::xppParser(std::string fn)
 
 		/* Extract globals */
 		extractGlobals();
+
+		/* Initialize the keyword tree for command parsing */
+		initializeTree();
 
 		/* Extract all other definitions */
 		extractDefinitions();
@@ -644,6 +644,9 @@ std::vector<std::string> xppParser::getList(const std::string& line,
 	std::vector<std::string> temp;
 	while (pos2 != std::string::npos) {
 		temp.push_back(line.substr(pos1, pos2-pos1));
+		if (temp.back().empty()) {
+			throw xppParserException(EXPECTED_LIST_ARGUMENT, line, 0, pos1);
+		}
 		pos1 = pos2+1;
 		pos2 = line.find_first_of(delim+closure, pos1);
 	}
