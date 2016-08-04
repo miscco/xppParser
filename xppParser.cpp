@@ -41,13 +41,11 @@ xppParser::xppParser(std::string fn)
 		/* Extract wiener processes */
 		extractWiener();
 
+		/* Extract globals */
+		extractGlobals();
+
 		/* Extract all other definitions */
 		extractDefinitions();
-
-		/* Debug output */
-		for(unsigned i = 0; i < lines.size(); ++i) {
-			std::cout << lines[i] << std::endl;
-		}
 
 		/* Catch errors */
 	} catch (xppParserException& e) {
@@ -62,6 +60,8 @@ xppParser::xppParser(std::string fn)
 	}
 }
 
+
+
 /**
  * @brief Checks whether brackets are closed properly
  */
@@ -69,8 +69,6 @@ void xppParser::checkBrackets() {
 	using charPos = std::pair<char, size_t>;
 	std::stack<charPos> brackets;
 	for (unsigned i=0; i < lines.size(); i++) {
-		/* Create a stack containing the individual brackets and their position
-		 */
 		for (unsigned j=0; j < lines[i].size(); j++) {
 			switch (lines[i].at(j)) {
 			case '(':
@@ -135,9 +133,9 @@ void xppParser::expandArrays() {
 	unsigned i=0;
 	while(i < lines.size()) {
 		std::size_t pos1, pos2, pos3;
+
 		/* Search for opening brackets */
 		pos1 = lines[i].find("[");
-
 		if (pos1 != std::string::npos) {
 			/* Search for the closing bracket and the dots between the start and
 			 * the end indices. The dots are only necessary for single line
@@ -234,11 +232,11 @@ void xppParser::expandArrayLines(std::vector<std::string>& lines,
 			parser.SetExpr(temp.substr(pos1+1, pos2-pos1-1));
 			result = parser.Eval();
 
-			/* Check whether the result is an integer  */
+			/* Check whether the result is an integer */
 			if (result.GetType() != 'i') {
 				throw xppParserException(WRONG_ARRAY_ASSIGNMENT, lines[i], i, pos1+1);
 			}
-			temp.replace(pos1, pos2-pos1+1, std::to_string(result.GetInteger()));
+			temp.replace(pos1, pos2-pos1+1, result.ToString());
 
 			/* Search for other expressions. */
 			pos1 = temp.find("[", pos2);
@@ -257,114 +255,133 @@ void xppParser::expandArrayLines(std::vector<std::string>& lines,
 void xppParser::extractDefinitions(void) {
 	unsigned i = 0;
 	while(i < lines.size()) {
-		std::string  keyword;
-		/* Any definition is marked by the equal sign */
-		std::size_t pos1 = lines[i].find("=");
-		std::size_t pos2;
-
-		/* If this function is reached every other valid statement should be
-		 * handeled, so bail out if we do not find an assignment.
+		/* Search for the first keyword. In most cases it should be the first
+		 * consequtive string that precedes a whitespace or equal sign.
 		 */
-		if (pos1 == std::string::npos) {
-			pos2 = lines[i].find("done");
-			if (pos2 == std::string::npos) {
-				throw xppParserException(UNKNOWN_ASSIGNMENT, lines[i], i, 0);
-			} else {
-				lines.erase(lines.begin()+i);
-			}
+		std::size_t pos1 = 0;
+		std::size_t pos2 = lines[i].find_first_of(" =");
+		if (pos2 == std::string::npos) {
+			throw xppParserException(UNKNOWN_ASSIGNMENT, lines[i], i, pos1+1);
 		}
 
-		/* Extract the keyword. In most cases it should be the first consequtive
-		 * string that precedes a whitespace and is followed by the name of the
-		 * variable.
-		 */
-		while (pos1 != std::string::npos) {
-			pos2 = lines[i].find_first_of(" \t\f\v\r");
-			keyword = lines[i].substr(0, pos2);
-			auto result = keywordTree.parse_text(keyword);
-			/* A keyword was found  extract its name and values */
-			if (result.size() == 1) {
-				std::string optName;
-				if (result.at(0).get_keyword() == keywords[0]) {
-					/* !Name */
-					optName = lines[i].substr(1, pos1-1);
-				} else if (result.at(0).get_keyword() == keywords[1] ||
-						   result.at(0).get_keyword() == keywords[2]) {
-					/* Name(t+1) or Name' */
-					optName = lines[i].substr(0, result.at(0).get_start());
+		/* Parse the keyword */
+		auto result = keywordTree.parse_text(lines[i].substr(pos1, pos2-pos1));
 
-				} else if (result.at(0).get_keyword() == keywords[3]) {
-					/* dName/dt */
-					optName = lines[i].substr(1, result.at(0).get_start()-1);
+		while (pos2 != std::string::npos) {
+			opts opt;
 
-				} else if (result.at(0).get_keyword() == keywords[4]) {
-					/* Name(t) */
-					optName = lines[i].substr(0, result.at(0).get_start());
-
-				} else if (result.at(0).get_keyword() == keywords[5]) {
-					/* volterra Name */
-					optName = lines[i].substr(pos2+1, pos1-pos2-1);
-
-				} else if (result.at(0).get_keyword() == keywords[6]) {
-					/* aux Name */
-					optName = lines[i].substr(pos2+1, pos1-pos2-1);
-
-				} else if (result.at(0).get_keyword() == keywords[7]) {
-					/* par Name */
-					optName = lines[i].substr(pos2+1, pos1-pos2-1);
-
-				} else if (result.at(0).get_keyword() == keywords[8]) {
-					/* number Name */
-					optName = lines[i].substr(pos2+1, pos1-pos2-1);
-
-				} else if (result.at(0).get_keyword() == keywords[9]) {
-					/* wiener Name1 Name2 ...*/
-					optName = lines[i].substr(pos2+1, pos1-pos2-1);
-
-				} else if (result.at(0).get_keyword() == keywords[10]) {
-					/* global Name */
-					optName = lines[i].substr(pos2+1, pos1-pos2-1);
-
-				} else if (result.at(0).get_keyword() == keywords[11]) {
-					/* init Name */
-					optName = lines[i].substr(pos2+1, pos1-pos2-1);
-
-				} else if (result.at(0).get_keyword() == keywords[12]) {
-					/* Name(0) */
-					optName = lines[i].substr(0, result.at(0).get_start());
-
-				} else if (result.at(0).get_keyword() == keywords[13]) {
-					/* bdry Name */
-					optName = lines[i].substr(pos2+1, pos1-pos2-1);
-
-				} else if (result.at(0).get_keyword() == keywords[14]) {
-					/* 0= Expression */
-					optName = lines[i].substr(pos2+1, pos1-pos2-1);
-
-				} else if (result.at(0).get_keyword() == keywords[15]) {
-					/* solve Name */
-					optName = lines[i].substr(pos2+1, pos1-pos2-1);
-
-				} else if (result.at(0).get_keyword() == keywords[16]) {
-					/* special Name */
-					optName = lines[i].substr(pos2+1, pos1-pos2-1);
-
-				} else if (result.at(0).get_keyword() == keywords[17]) {
-					/* set Name */
-					optName = lines[i].substr(pos2+1, pos1-pos2-1);
-
-				} else if (result.at(0).get_keyword() == keywords[18]) {
-					/* @ Name */
-					optName = lines[i].substr(pos2+1, pos1-pos2-1);
-				}
+			/* A keyword integrated into the name was found */
+			if (result.at(0).get_keyword() == keywords[0]) {
+				/* !Name */
+				opt.Name = lines[i].substr(pos1+1, pos2-pos1-1);
+			} else if (result.at(0).get_keyword() == keywords[3]) {
+				/* dName/dt */
+				opt.Name = lines[i].substr(pos1+1, result.at(0).get_start()-1);
+			} else if (result.at(0).get_keyword() == keywords[13]) {
+				/* 0= Expression */
+				opt.Name = "Initial Condition";
+			} else if (result.at(0).get_keyword() == keywords[1] ||
+					   result.at(0).get_keyword() == keywords[2] ||
+					   result.at(0).get_keyword() == keywords[4] ||
+					   result.at(0).get_keyword() == keywords[11]) {
+				/* Name(t+1) or Name' */
+				/* Name(t) */
+				/* Name(0) */
+				opt.Name = lines[i].substr(pos1, result.at(0).get_start());
+			} else if (result.at(0).get_keyword() == keywords[9]) {
+				/* Name(args...) */
+				size_t pos3 = lines[i].find("(", pos1);
+				opt.Name = lines[i].substr(pos1, pos3-pos1);
+				opt.Args = getList(lines[i].substr(pos3, pos2-pos3), ")", ",");
 			} else {
-				/* This can only be a function or expression definition that may
-				 * contain parts of keywords.
-				 */
+				opt.Name = getNextWord(lines[i], pos1, pos2);
 			}
-			pos1 = lines[i].find("=", pos1+1);
+
+			/* Get the expression */
+			opt.Expr = getNextExpr(lines[i], pos1, pos2);
+
+			/* Find the type of the keyword */
+			if (result.at(0).get_keyword() == keywords[0]) {
+				Constants.push_back(opt);
+			} else if (result.at(0).get_keyword() == keywords[1] ||
+					   result.at(0).get_keyword() == keywords[2]) {
+				Equations.push_back(opt);
+			} else if (result.at(0).get_keyword() == keywords[3]) {
+				Equations.push_back(opt);
+			} else if (result.at(0).get_keyword() == keywords[4]) {
+				Volterra.push_back(opt);
+			} else if (result.at(0).get_keyword() == keywords[5]) {
+				Constants.push_back(opt);
+			} else if (result.at(0).get_keyword() == keywords[6]) {
+				Auxiliar.push_back(opt);
+			} else if (result.at(0).get_keyword() == keywords[7]) {
+				Parameters.push_back(opt);
+			} else if (result.at(0).get_keyword() == keywords[8]) {
+				Numbers.push_back(opt);
+			} else if (result.at(0).get_keyword() == keywords[9]) {
+				Functions.push_back(opt);
+			} else if (result.at(0).get_keyword() == keywords[10]) {
+				InitConds.push_back(opt);
+			} else if (result.at(0).get_keyword() == keywords[11]) {
+				Volterra.push_back(opt);
+			} else if (result.at(0).get_keyword() == keywords[12]) {
+				/* Boundary expressions do not have a name */
+				opt.Expr = opt.Name;
+				opt.Name = "";
+				Boundaries.push_back(opt);
+			} else if (result.at(0).get_keyword() == keywords[13]) {
+				Volterra.push_back(opt);
+			} else if (result.at(0).get_keyword() == keywords[14]) {
+				Algebraic.push_back(opt);
+			} else if (result.at(0).get_keyword() == keywords[15]) {
+				Special.push_back(opt);
+			} else if (result.at(0).get_keyword() == keywords[16]) {
+				/* Sets are a comma separated list */
+				opt.Args = getList(opt.Expr, "}", ",");
+				opt.Expr = "";
+				Sets.push_back(opt);
+			} else if (result.at(0).get_keyword() == keywords[17]) {
+				Options.push_back(opt);
+			} else if (result.at(0).get_keyword() == keywords[18]) {
+				Exports.push_back(opt);
+			} else {
+				throw xppParserException(UNKNOWN_ASSIGNMENT, lines[i], i, pos1+1);
+			}
 		}
-		i++;
+		lines.erase(lines.begin() + i);
+	}
+}
+
+/**
+ * @brief Extract a global flag implementing a delta function
+ *
+ * This function extracts the condition and the sign of the flag and the resets
+ */
+void xppParser::extractGlobals(void) {
+	unsigned i = 0;
+	while(i < lines.size()) {
+		std::size_t pos1 = lines[i].find("global");
+		std::size_t pos2 = lines[i].find(" ", pos1);
+		if (pos1 != std::string::npos) {
+			opts opt;
+
+			/* Parse the sign flag For simplicity store it in the name slot */
+			opt.Name = getNextWord(lines[i], pos1, pos2);
+
+			/* Parse flip condition. For safety parse until the curly brace of
+			 * the reset slot
+			 */
+			pos1 = lines[i].find_first_not_of(" ", pos2);
+			pos2 = lines[i].find("{", pos1);
+			opt.Expr = lines[i].substr(pos1, pos2-pos1-1);
+
+			/* The individual resets are separated by a semicolon */
+			opt.Args = getList(lines[i].substr(pos2), "}", ";");
+			Globals.push_back(opt);
+			lines.erase(lines.begin() + i);
+		} else {
+			i++;
+		}
 	}
 }
 
@@ -378,22 +395,22 @@ void xppParser::extractMarkov(void) {
 	unsigned i = 0;
 	while(i < lines.size()) {
 		std::size_t pos1 = lines[i].find("markov");
-		std::size_t pos2 = lines[i].find_first_of(" ", pos1);
+		std::size_t pos2 = lines[i].find(" ", pos1);
 		if (pos1 != std::string::npos) {
 			opts opt;
 			int nstates;
 
 			/* Parse the name */
-			opt.Name = findNextWord(lines[i], pos1, pos2);
+			opt.Name = getNextWord(lines[i], pos1, pos2);
 
 			/* Parse the number of states */
 			try {
-				nstates = std::stoi(findNextWord(lines[i], pos1, pos2));
+				nstates = std::stoi(getNextWord(lines[i], pos1, pos2));
 			} catch (std::invalid_argument) {
 				throw xppParserException(EXPECTED_NUMBER, lines[i], i, pos1);
 			}
 			/* Store the number of states for convenience */
-			opt.Value = nstates;
+			opt.Expr = nstates;
 
 			/* Parse the transition probabilities */
 			for (int j=0; j < nstates; j++) {
@@ -409,6 +426,7 @@ void xppParser::extractMarkov(void) {
 				}
 				lines.erase(lines.begin() + i + 1);
 			}
+			Markovs.push_back(opt);
 			lines.erase(lines.begin() + i);
 		} else {
 			i++;
@@ -426,7 +444,7 @@ void xppParser::extractTable(void) {
 	unsigned i = 0;
 	while(i < lines.size()) {
 		std::size_t pos1 = lines[i].find("table");
-		std::size_t pos2 = lines[i].find_first_of(" ", pos1);
+		std::size_t pos2 = lines[i].find(" ", pos1);
 		if (pos1 != std::string::npos) {
 			opts opt;
 			unsigned npoints;
@@ -434,61 +452,98 @@ void xppParser::extractTable(void) {
 
 			/* Initialize the parser */
 			mup::ParserX parser;
-			mup::Value result;
 
 			/* Parse the name */
-			opt.Name = findNextWord(lines[i], pos1, pos2);
+			opt.Name = getNextWord(lines[i], pos1, pos2);
 
 			/* If the table has to be calculated there is a % sign instead of a
 			 * filename
 			 */
-			std::string fn = findNextWord(lines[i], pos1, pos2);
+			std::string fn = getNextWord(lines[i], pos1, pos2);
 			if (fn == "%") {
 				/* Get the number of points */
 				try {
-					npoints = std::stoi(findNextWord(lines[i], pos1, pos2));
+					npoints = std::stoi(getNextWord(lines[i], pos1, pos2));
 				} catch (std::invalid_argument) {
 					throw xppParserException(EXPECTED_NUMBER, lines[i], i, pos1);
 				}
 
 				/* Get the bounds */
-				parser.SetExpr(findNextWord(lines[i], pos1, pos2));
+				parser.SetExpr(getNextWord(lines[i], pos1, pos2));
 				try {
 					xLow = parser.Eval().GetFloat();
 				} catch (mup::ParserError) {
 					throw xppParserException(EXPECTED_NUMBER, lines[i], i, pos1);
 				}
-				parser.SetExpr(findNextWord(lines[i], pos1, pos2));
+				parser.SetExpr(getNextWord(lines[i], pos1, pos2));
 				try {
 					xHigh = parser.Eval().GetFloat();
 				} catch (mup::ParserError) {
 					throw xppParserException(EXPECTED_NUMBER, lines[i], i, pos1);
 				}
 
-				/* Calculate the intermediant points */
-				double dx = (xHigh - xLow)/(npoints-1);
-				std::vector<double> points(npoints);
-				for(unsigned j = 0; j < npoints; j++) {
-					points.at(j) = xLow + j * dx;
-				}
-
 				/* Parse the defining function */
 				mup::Value t;
 				parser.DefineVar("t",  mup::Variable(&t));
-				parser.SetExpr(findNextWord(lines[i], pos1, pos2));
+				parser.SetExpr(getNextWord(lines[i], pos1, pos2));
 
 				/* Evaluate the table expression */
+				double dx = (xHigh - xLow)/(npoints-1);
 				try {
 					for(unsigned j = 0; j < npoints; j++) {
-						t = (mup::float_type)points.at(j);
-						result = parser.Eval();
-						opt.Args.push_back(std::to_string(result.GetFloat()));
+						t = (mup::float_type)(xLow + j * dx);
+						opt.Args.push_back(parser.Eval().ToString());
 					}
 				} catch (mup::ParserError) {
 					throw xppParserException(WRONG_TABLE_ASSIGNMENT, lines[i], i, pos1);
 				}
 			} else {
+				/* Open file for parsing */
+				std::ifstream fileStream(fn.c_str(), std::ios::in);
+				if (fileStream.fail()) {
+					throw std::runtime_error("Cannot open table file " + fn + "\n");
+				}
+				std::string temp;
 
+				/* Get the number of points */
+				try {
+					getline(fileStream, temp);
+					npoints = std::stoi(temp);
+				} catch (std::invalid_argument) {
+					throw xppParserException(EXPECTED_NUMBER, temp, 0, pos1);
+				}
+
+				/* Get the bounds */
+				getline(fileStream, temp);
+				parser.SetExpr(temp);
+				try {
+					xLow = parser.Eval().GetFloat();
+				} catch (mup::ParserError) {
+					throw xppParserException(EXPECTED_NUMBER, temp, 1, pos1);
+				}
+				getline(fileStream, temp);
+				parser.SetExpr(temp);
+				try {
+					xHigh = parser.Eval().GetFloat();
+				} catch (mup::ParserError) {
+					throw xppParserException(EXPECTED_NUMBER, temp, 2, pos1);
+				}
+
+				/* Parse the table values */
+				try {
+					for(unsigned j = 0; j < npoints; j++) {
+						if (getline(fileStream, temp)) {
+							parser.SetExpr(temp);
+							opt.Args.push_back(parser.Eval().ToString());
+						} else {
+							throw xppParserException(EXPECTED_TABLE_ASSIGNMENT,
+													 temp, j-1, pos1);
+						}
+					}
+				} catch (mup::ParserError) {
+					throw xppParserException(WRONG_TABLE_ASSIGNMENT, temp, 0, pos1);
+				}
+				fileStream.close();
 			}
 			Tables.push_back(opt);
 			lines.erase(lines.begin() + i);
@@ -508,10 +563,10 @@ void xppParser::extractWiener(void) {
 	unsigned i = 0;
 	while(i < lines.size()) {
 		std::size_t pos1 = lines[i].find("wiener");
-		std::size_t pos2 = lines[i].find_first_of(" ", pos1);
+		std::size_t pos2 = lines[i].find(" ", pos1);
 		if (pos1 != std::string::npos) {
 			while (pos2 != std::string::npos) {
-				Wieners.Args.push_back(findNextWord(lines[i], pos1, pos2));
+				Wieners.Args.push_back(getNextWord(lines[i], pos1, pos2));
 			}
 			lines.erase(lines.begin() + i);
 		} else {
@@ -521,19 +576,111 @@ void xppParser::extractWiener(void) {
 }
 
 /**
- * @brief Finds the next whitespace separated word after pos1
+ * @brief Finds the position of the next assignment within a given line
  *
  * @par line: String we are searching in
- * @par	pos1: Old position will be udpated
+ * @par	pos1: Old start position which will be udpated
+ * @par	pos2: Position of the last equal sign
+ *
+ * It is possible that a single line contains multiple assignments that are
+ * separated by a commata. Therefore, search for the next commata after pos2
+ * that is not encapsulated by a bracket and update pos1 to the position after
+ * it.
+ */
+void xppParser::findNextAssignment(const std::string& line,
+								   size_t &pos1,
+								   size_t &pos2) {
+	std::stack<char> brackets;
+	pos1 = pos2;
+	for (unsigned i=pos2; i < line.size(); i++) {
+		switch (line.at(i)) {
+		case '(':
+			brackets.push(')');
+			break;
+		case '{':
+			brackets.push('}');
+			break;
+		case '[':
+			brackets.push(']');
+			break;
+		case ')':
+			brackets.pop();
+			break;
+		case '}':
+			brackets.pop();
+			break;
+		case ']':
+			brackets.pop();
+			break;
+		case ',':
+			if (brackets.empty()) {
+				pos2 = i+1;
+				return;
+			} else {
+				continue;
+			}
+		default:
+			continue;
+		}
+	}
+	pos2 = std::string::npos;
+}
+
+
+/**
+ * @brief Extracts elements from a brace enclosed list
+ *
+ * @par line: String we are searching in
+ * @par	encloure: The bracket type { or (
+ * @par	delim: The delimiter type , or ;
+ *
+ * @return Args: Vector of strings of the list elements
+ */
+std::vector<std::string> xppParser::getList(const std::string& line,
+											std::string closure,
+											std::string delim) {
+	size_t pos1 = 1;
+	size_t pos2 = line.find_first_of(delim+closure, pos1);
+	std::vector<std::string> temp;
+	while (pos2 != std::string::npos) {
+		temp.push_back(line.substr(pos1, pos2-pos1));
+		pos1 = pos2+1;
+		pos2 = line.find_first_of(delim+closure, pos1);
+	}
+	return temp;
+}
+
+/**
+ * @brief Gets the next expression after pos2
+ *
+ * @par line: String we are searching in
+ * @par	pos1: Old position of the start of the assignment will be updated to the
+ * position after the commata or std::string::npos.
+ * @par	pos2: Position of the equal sign
+ *
+ * @return string: String between pos2 and the next commata outside of braces
+ */
+std::string xppParser::getNextExpr(const std::string& line,
+								   size_t &pos1,
+								   size_t &pos2) {
+	findNextAssignment(line, pos1, pos2);
+	return line.substr(pos1+1, pos2-pos1-2);
+}
+
+/**
+ * @brief Gets the next whitespace separated word after pos1
+ *
+ * @par line: String we are searching in
+ * @par	pos1: Old position which will be udpated
  * @par pos2: Old position at which the search startes
  *
  * @return pos1: First position of the new word
  * @return pos2: Position of the first whitespace character after the word
  * @return string: String between [pos1, pos2-1]
  */
-std::string xppParser::findNextWord(const std::string& line, size_t &pos1, size_t &pos2) {
+std::string xppParser::getNextWord(const std::string& line, size_t &pos1, size_t &pos2) {
 	pos1 = line.find_first_not_of(" ", pos2);
-	pos2 = line.find_first_of(" ", pos1);
+	pos2 = line.find_first_of(" =", pos1);
 	return line.substr(pos1, pos2-pos1);
 }
 
@@ -544,6 +691,7 @@ void xppParser::initializeTree (void) {
 	for (size_t i=0; i < keywords.size(); i++) {
 		keywordTree.insert(keywords.at(i));
 	}
+	keywordTree.remove_overlaps();
 }
 
 /**
@@ -564,7 +712,9 @@ void xppParser::readFile(void) {
 	std::string temp;
 	while(getline(fileStream, temp)) {
 		size_t pos1 = temp.find_first_not_of(" \t\f\v\r\n");
-		if (temp.length() != 0 && pos1 != std::string::npos) {
+		if (temp == "done") {
+			break;
+		} else if (temp.length() != 0 && pos1 != std::string::npos) {
 			/* Remove trailing and superflous whitespaces */
 			temp.erase(0, pos1);
 			temp.resize(temp.find_last_not_of(" \t\f\v\r\n")+1);
@@ -580,6 +730,7 @@ void xppParser::readFile(void) {
 	if (lines.size() == 0) {
 		throw std::runtime_error("Empty ode file " + fileName + "\n");
 	}
+	fileStream.close();
 }
 
 /**
@@ -627,7 +778,7 @@ void xppParser::removeWhitespace() {
 			pos2 = lines[i].find(")");
 			pos3 = lines[i].find_first_of(" \t\f\v\r", pos1);
 			while (pos3 < pos2) {
-				lines[i].erase(pos3, pos2-pos3);
+				lines[i].erase(pos3, 1);
 				pos3 = lines[i].find_first_of(" \t\f\v\r", pos1);
 			}
 		}
@@ -645,6 +796,12 @@ void xppParser::removeWhitespace() {
 			if (pos2 != pos1+1) {
 				lines[i].erase(pos1+1, pos2-pos1-1);
 			}
+		}
+
+		/* Remove trailing commata etc */
+		pos1 = lines[i].find_last_not_of(",;");
+		if (pos1 != lines[i].size()-1) {
+			lines[i].resize(pos1+1);
 		}
 		i++;
 	}

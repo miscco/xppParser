@@ -19,7 +19,7 @@
 
 typedef struct {
 	std::string					Name;
-	std::string					Value;
+	std::string					Expr;
 	std::vector<std::string>	Args;
 } opts;
 
@@ -36,6 +36,7 @@ private:
 							 const std::vector<std::string> &expressions,
 							 int idx);
 	void extractDefinitions	(void);
+	void extractGlobals		(void);
 	void extractMarkov		(void);
 	void extractTable		(void);
 	void extractWiener		(void);
@@ -43,11 +44,13 @@ private:
 	void readFile			(void);
 	void removeComments		(void);
 	void removeWhitespace	(void);
+	void splitLines			(void);
 
 	/* Helper functions */
-	std::string findNextWord (const std::string& line,
-							  size_t& pos1,
-							  size_t& pos2);
+	void		findNextAssignment (const std::string&, size_t& , size_t&);
+	std::vector<std::string> getList (const std::string&, std::string, std::string);
+	std::string getNextExpr (const std::string&, size_t& ,size_t&);
+	std::string getNextWord (const std::string&, size_t& ,size_t&);
 
 	/* Filename of the ode file */
 	std::string				 fileName;
@@ -67,10 +70,10 @@ private:
 		"aux",
 		"par",
 		"number",
-		//"(",		/* Handled separately to discriminate odes and volterra */
+		"(",		/* Handled separately to discriminate odes and volterra */
 		//"table",  /* This is handeled separately */
 		//"wiener", /* Handled separately */
-		"global",
+		//"global",
 		"init",
 		"(0)",
 		"bdry",
@@ -86,14 +89,23 @@ private:
 	aho_corasick::trie keywordTree;
 
 	/* Options arrays */
+	optsArray Algebraic;
+	optsArray Auxiliar;
+	optsArray Boundaries;
 	optsArray Constants;
 	optsArray Equations;
+	optsArray Exports;
 	optsArray Functions;
+	optsArray Globals;
 	optsArray InitConds;
 	optsArray Markovs;
+	optsArray Numbers;
+	optsArray Options;
 	optsArray Parameters;
-	optsArray Settings;
+	optsArray Special;
+	optsArray Sets;
 	optsArray Tables;
+	optsArray Volterra;
 	opts	  Wieners;
 };
 

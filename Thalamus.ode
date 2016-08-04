@@ -7,6 +7,10 @@ param g_LK=0.0, g_h=0.025
 #Conductances 
 !g_L=1#Test comment
 
+global 1 x-1 {x=0;y=y+a*sin(y)}
+
+Function(Arg1, Arg2, Arg3)= 1*2
+
 markov z 2
 {0} {alpha(v)}
 {beta(v)} {0}
@@ -41,6 +45,11 @@ wiener Stoch1 Stoch2 Stoch3 Stoch4
 !k4= 1E-3
 !n_P= 4
 !g_inc= 2
+
+bdry u'-v-1
+
+set hopf {a=.3,x=1.2,b=9}
+
 
 #Functions
 #Firing rates

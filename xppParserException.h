@@ -10,6 +10,7 @@ enum xppParserError {
 	MISSING_CLOSING_BRACKET,
 	MISSING_OPENING_BRACKET,
 	EXPECTED_NUMBER,
+	EXPECTED_TABLE_ASSIGNMENT,
 	UNKNOWN_ASSIGNMENT,
 	WRONG_ARRAY_ASSIGNMENT,
 	WRONG_MARKOV_ASSIGNMENT,
@@ -35,6 +36,9 @@ public:
 			break;
 		case EXPECTED_NUMBER:
 			m_msg = std::string("Cannot parse number");
+			break;
+		case EXPECTED_TABLE_ASSIGNMENT:
+			m_msg = std::string("Missing value for the lookup table");
 			break;
 		case UNKNOWN_ASSIGNMENT:
 			m_msg = std::string("Unknown assignment");
