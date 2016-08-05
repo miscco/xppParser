@@ -459,7 +459,7 @@ void xppParser::extractGlobal(void) {
 /**
  * @brief Extract a markov process from the parsed lines
  *
- * This function extracts the definition of markove processes as they constitute
+ * This function extracts the definition of markov processes as they constitute
  * one of the few multiline statements in an ode file.
  */
 void xppParser::extractMarkov(void) {
@@ -639,8 +639,9 @@ void xppParser::extractTable(void) {
 /**
  * @brief Extracts wiener processes
  *
- * This function extracts the definition of wiener processes as their definition
- * does not contain an equal sign but only the names of the individual proceses.
+ * This function extracts the declaration of wiener processes as their
+ * definition does not contain an equal sign but only the names of the
+ * individual proceses.
  */
 void xppParser::extractWiener(void) {
 	unsigned i = 0;
@@ -743,7 +744,7 @@ std::vector<std::string> xppParser::getList(const std::string& line,
 }
 
 /**
- * @brief Gets the next expression after pos2
+ * @brief Gets the next expression between pos2 and a commata
  *
  * @par line: String we are searching in
  * @par	pos1: Old position of the start of the assignment will be updated to the
@@ -760,7 +761,7 @@ std::string xppParser::getNextExpr(const std::string& line,
 }
 
 /**
- * @brief Gets the next whitespace separated word after pos1
+ * @brief Gets the next whitespace separated word after pos2
  *
  * @par line: String we are searching in
  * @par	pos1: Old position which will be udpated
