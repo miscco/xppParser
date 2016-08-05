@@ -29,6 +29,9 @@ xppParser::xppParser(std::string fn)
 		/* Expand array descriptions */
 		expandArrays();
 
+		/* Extract exports to dlls */
+		extractExport();
+
 		/* Extract markov processes */
 		extractMarkov();
 
@@ -39,13 +42,13 @@ xppParser::xppParser(std::string fn)
 		extractWiener();
 
 		/* Extract globals */
-		extractGlobals();
+		extractGlobal();
 
 		/* Initialize the keyword tree for command parsing */
 		initializeTree();
 
 		/* Extract all other definitions */
-		extractDefinitions();
+		extractDefinition();
 
 		/* Catch errors */
 	} catch (xppParserException& e) {
@@ -128,7 +131,7 @@ void xppParser::checkBrackets() {
  *
  * @return 0 on success or error values if the name is taken.
  */
-int xppParser::checkNames(const std::string &name) {
+int xppParser::checkName(const std::string &name) {
 	if (usedNames.find(name) == usedNames.end()) {
 		usedNames.insert(name);
 	} else {
@@ -274,7 +277,7 @@ void xppParser::expandArrayLines(std::vector<std::string>& lines,
  * This extracts definitions that are given in the keyword list and are marked
  * by an equal sign.
  */
-void xppParser::extractDefinitions(void) {
+void xppParser::extractDefinition(void) {
 	unsigned i = 0;
 	while(i < lines.size()) {
 		/* Search for the first keyword. In most cases it should be the first
@@ -320,7 +323,7 @@ void xppParser::extractDefinitions(void) {
 			}
 			/* Check whether the name is valid except for initial conditions */
 			if (result.at(0).get_keyword() != keywords[10]) {
-				int isValidName = checkNames(opt.Name);
+				int isValidName = checkName(opt.Name);
 				if (isValidName == DUPLICATED_NAME) {
 					throw xppParserException(DUPLICATED_NAME, lines[i], i, pos1);
 				} else if (isValidName == RESERVED_KEYWORD) {
@@ -384,11 +387,42 @@ void xppParser::extractDefinitions(void) {
 }
 
 /**
+ * @brief Extract exports to link to procompiled C routines inside xppaut
+ *
+ * This function extracts the in and out arguments of the respective function.
+ * To keep with the other structures the Args vector contains both the input and
+ * the output. Therefore the Expr string contains the number of input arguments.
+ */
+void xppParser::extractExport(void) {
+	unsigned i = 0;
+	while(i < lines.size()) {
+		std::size_t pos1 = lines[i].find("export");
+		std::size_t pos2 = lines[i].find(" ", pos1);
+		if (pos1 != std::string::npos) {
+			opts opt;
+			std::vector<std::string> temp;
+
+			/* Get the input arguments list */
+			temp = getList(getNextWord(lines[i], pos1, pos2), "}", ",");
+			opt.Args = temp;
+			opt.Expr = std::to_string(temp.size());
+			temp = getList(getNextWord(lines[i], pos1, pos2), "}", ",");
+			opt.Args.insert(opt.Args.end(), temp.begin(), temp.end());
+
+			Exports.push_back(opt);
+			lines.erase(lines.begin() + i);
+		} else {
+			i++;
+		}
+	}
+}
+
+/**
  * @brief Extract a global flag implementing a delta function
  *
  * This function extracts the condition and the sign of the flag and the resets
  */
-void xppParser::extractGlobals(void) {
+void xppParser::extractGlobal(void) {
 	unsigned i = 0;
 	while(i < lines.size()) {
 		std::size_t pos1 = lines[i].find("global");
@@ -398,7 +432,7 @@ void xppParser::extractGlobals(void) {
 
 			/* Parse the sign flag For simplicity store it in the name slot */
 			opt.Name = getNextWord(lines[i], pos1, pos2);
-			int isValidName = checkNames(opt.Name);
+			int isValidName = checkName(opt.Name);
 			if (isValidName == DUPLICATED_NAME) {
 				throw xppParserException(DUPLICATED_NAME, lines[i], i, pos1);
 			} else if (isValidName == RESERVED_KEYWORD) {
@@ -439,7 +473,7 @@ void xppParser::extractMarkov(void) {
 
 			/* Parse the name */
 			opt.Name = getNextWord(lines[i], pos1, pos2);
-			int isValidName = checkNames(opt.Name);
+			int isValidName = checkName(opt.Name);
 			if (isValidName == DUPLICATED_NAME) {
 				throw xppParserException(DUPLICATED_NAME, lines[i], i, pos1);
 			} else if (isValidName == RESERVED_KEYWORD) {
@@ -498,7 +532,7 @@ void xppParser::extractTable(void) {
 
 			/* Parse the name */
 			opt.Name = getNextWord(lines[i], pos1, pos2);
-			int isValidName = checkNames(opt.Name);
+			int isValidName = checkName(opt.Name);
 			if (isValidName == DUPLICATED_NAME) {
 				throw xppParserException(DUPLICATED_NAME, lines[i], i, pos1);
 			} else if (isValidName == RESERVED_KEYWORD) {
@@ -616,7 +650,7 @@ void xppParser::extractWiener(void) {
 		if (pos1 != std::string::npos) {
 			while (pos2 != std::string::npos) {
 				Wieners.Args.push_back(getNextWord(lines[i], pos1, pos2));
-				int isValidName = checkNames(Wieners.Args.back());
+				int isValidName = checkName(Wieners.Args.back());
 				if (isValidName == DUPLICATED_NAME) {
 					throw xppParserException(DUPLICATED_NAME, lines[i], i, pos1);
 				} else if (isValidName == RESERVED_KEYWORD) {

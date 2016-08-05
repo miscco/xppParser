@@ -35,8 +35,9 @@ private:
 	void expandArrayLines	(std::vector<std::string> &lines,
 							 const std::vector<std::string> &expressions,
 							 int idx);
-	void extractDefinitions	(void);
-	void extractGlobals		(void);
+	void extractDefinition	(void);
+	void extractExport		(void);
+	void extractGlobal		(void);
 	void extractMarkov		(void);
 	void extractTable		(void);
 	void extractWiener		(void);
@@ -48,7 +49,7 @@ private:
 
 	/* Helper functions */
 	void checkBrackets		(void);
-	int  checkNames			(const std::string&);
+	int  checkName			(const std::string&);
 	void findNextAssignment (const std::string&, size_t& , size_t&);
 	std::vector<std::string> getList (const std::string&, std::string, std::string);
 	std::string getNextExpr (const std::string&, size_t& ,size_t&);
