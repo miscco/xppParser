@@ -3,7 +3,6 @@
 
 #include <exception>
 #include <string>
-#include <vector>
 
 /* Different parser errors */
 enum xppParserError {

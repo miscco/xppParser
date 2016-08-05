@@ -2,9 +2,7 @@
 #define PARSER_H
 #include <iostream>
 #include <algorithm>
-#include <stdexcept>
 #include <fstream>
-#include <regex>
 #include <set>
 #include <stack>
 #include <string>
@@ -15,7 +13,6 @@
 #include "aho_corasick/aho_corasick.hpp"
 #include "mpParser.h"
 #include "mpDefines.h"
-#include "mpTest.h"
 
 
 typedef struct {
@@ -56,7 +53,7 @@ private:
 	std::string getNextWord (const std::string&, size_t& ,size_t&);
 
 	/* Filename of the ode file */
-	std::string					fileName;
+	const std::string			fileName;
 
 	/* List of the already used names */
 	std::set<std::string>		usedNames;
