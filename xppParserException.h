@@ -7,11 +7,13 @@
 
 /* Different parser errors */
 enum xppParserError {
+	DUPLICATED_NAME,
 	MISSING_CLOSING_BRACKET,
 	MISSING_OPENING_BRACKET,
 	EXPECTED_LIST_ARGUMENT,
 	EXPECTED_NUMBER,
 	EXPECTED_TABLE_ASSIGNMENT,
+	RESERVED_KEYWORD,
 	UNKNOWN_ASSIGNMENT,
 	WRONG_ARRAY_ASSIGNMENT,
 	WRONG_MARKOV_ASSIGNMENT,
@@ -29,6 +31,9 @@ public:
 								const size_t pos)
 	{
 		switch (msgType) {
+		case DUPLICATED_NAME:
+			m_msg = std::string("Name has already been reserved");
+			break;
 		case MISSING_CLOSING_BRACKET:
 			m_msg = std::string("Cannot find closing bracket");
 			break;
@@ -43,6 +48,9 @@ public:
 			break;
 		case EXPECTED_TABLE_ASSIGNMENT:
 			m_msg = std::string("Missing value for the lookup table");
+			break;
+		case RESERVED_KEYWORD:
+			m_msg = std::string("Given name is already a reserved keyword");
 			break;
 		case UNKNOWN_ASSIGNMENT:
 			m_msg = std::string("Unknown assignment");

@@ -122,6 +122,28 @@ void xppParser::checkBrackets() {
 }
 
 /**
+ * @brief Checks whether a given name is already taken or reserved
+ *
+ * @par name: The name of the new definition
+ *
+ * @return 0 on success or error values if the name is taken.
+ */
+int xppParser::checkNames(const std::string &name) {
+	if (usedNames.find(name) == usedNames.end()) {
+		usedNames.insert(name);
+	} else {
+		return RESERVED_KEYWORD;
+	}
+
+	if (std::find(keywords.begin(), keywords.end(), name) == keywords.end()) {
+		usedNames.insert(name);
+	} else {
+		return DUPLICATED_NAME;
+	}
+	return -1;
+}
+
+/**
  * @brief Expand array expressions in ode files
  *
  * This function searches for the array expressions found in ode files, that are
@@ -296,6 +318,15 @@ void xppParser::extractDefinitions(void) {
 			} else {
 				opt.Name = getNextWord(lines[i], pos1, pos2);
 			}
+			/* Check whether the name is valid except for initial conditions */
+			if (result.at(0).get_keyword() != keywords[10]) {
+				int isValidName = checkNames(opt.Name);
+				if (isValidName == DUPLICATED_NAME) {
+					throw xppParserException(DUPLICATED_NAME, lines[i], i, pos1);
+				} else if (isValidName == RESERVED_KEYWORD) {
+					throw xppParserException(RESERVED_KEYWORD, lines[i], i, pos1);
+				}
+			}
 
 			/* Get the expression */
 			opt.Expr = getNextExpr(lines[i], pos1, pos2);
@@ -367,6 +398,12 @@ void xppParser::extractGlobals(void) {
 
 			/* Parse the sign flag For simplicity store it in the name slot */
 			opt.Name = getNextWord(lines[i], pos1, pos2);
+			int isValidName = checkNames(opt.Name);
+			if (isValidName == DUPLICATED_NAME) {
+				throw xppParserException(DUPLICATED_NAME, lines[i], i, pos1);
+			} else if (isValidName == RESERVED_KEYWORD) {
+				throw xppParserException(RESERVED_KEYWORD, lines[i], i, pos1);
+			}
 
 			/* Parse flip condition. For safety parse until the curly brace of
 			 * the reset slot
@@ -402,6 +439,12 @@ void xppParser::extractMarkov(void) {
 
 			/* Parse the name */
 			opt.Name = getNextWord(lines[i], pos1, pos2);
+			int isValidName = checkNames(opt.Name);
+			if (isValidName == DUPLICATED_NAME) {
+				throw xppParserException(DUPLICATED_NAME, lines[i], i, pos1);
+			} else if (isValidName == RESERVED_KEYWORD) {
+				throw xppParserException(RESERVED_KEYWORD, lines[i], i, pos1);
+			}
 
 			/* Parse the number of states */
 			try {
@@ -455,6 +498,12 @@ void xppParser::extractTable(void) {
 
 			/* Parse the name */
 			opt.Name = getNextWord(lines[i], pos1, pos2);
+			int isValidName = checkNames(opt.Name);
+			if (isValidName == DUPLICATED_NAME) {
+				throw xppParserException(DUPLICATED_NAME, lines[i], i, pos1);
+			} else if (isValidName == RESERVED_KEYWORD) {
+				throw xppParserException(RESERVED_KEYWORD, lines[i], i, pos1);
+			}
 
 			/* If the table has to be calculated there is a % sign instead of a
 			 * filename
@@ -567,6 +616,12 @@ void xppParser::extractWiener(void) {
 		if (pos1 != std::string::npos) {
 			while (pos2 != std::string::npos) {
 				Wieners.Args.push_back(getNextWord(lines[i], pos1, pos2));
+				int isValidName = checkNames(Wieners.Args.back());
+				if (isValidName == DUPLICATED_NAME) {
+					throw xppParserException(DUPLICATED_NAME, lines[i], i, pos1);
+				} else if (isValidName == RESERVED_KEYWORD) {
+					throw xppParserException(RESERVED_KEYWORD, lines[i], i, pos1);
+				}
 			}
 			lines.erase(lines.begin() + i);
 		} else {

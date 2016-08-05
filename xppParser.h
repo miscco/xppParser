@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <fstream>
 #include <regex>
+#include <set>
 #include <stack>
 #include <string>
 #include <vector>
@@ -30,7 +31,6 @@ public:
 	xppParser(std::string);
 
 private:
-	void checkBrackets		(void);
 	void expandArrays		(void);
 	void expandArrayLines	(std::vector<std::string> &lines,
 							 const std::vector<std::string> &expressions,
@@ -47,16 +47,21 @@ private:
 	void splitLines			(void);
 
 	/* Helper functions */
-	void		findNextAssignment (const std::string&, size_t& , size_t&);
+	void checkBrackets		(void);
+	int  checkNames			(const std::string&);
+	void findNextAssignment (const std::string&, size_t& , size_t&);
 	std::vector<std::string> getList (const std::string&, std::string, std::string);
 	std::string getNextExpr (const std::string&, size_t& ,size_t&);
 	std::string getNextWord (const std::string&, size_t& ,size_t&);
 
 	/* Filename of the ode file */
-	std::string				 fileName;
+	std::string					fileName;
+
+	/* List of the already used names */
+	std::set<std::string>		usedNames;
 
 	/* Vector containing the individual lines from the ode file */
-	std::vector<std::string> lines;
+	std::vector<std::string>	lines;
 
 	/* Keywords utilized in the ode file */
 	const std::vector<std::string> keywords = {
