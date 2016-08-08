@@ -68,6 +68,7 @@ private:
 	std::vector<opts> Functions;
 	std::vector<opts> Globals;
 	std::vector<opts> InitConds;
+	std::vector<opts> Internal;
 	std::vector<opts> Markovs;
 	std::vector<opts> Numbers;
 	std::vector<opts> Options;

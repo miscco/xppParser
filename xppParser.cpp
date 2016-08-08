@@ -291,7 +291,10 @@ void xppParser::extractDefinition(void) {
 			opts opt;
 
 			/* A keyword integrated into the name was found */
-			if (result.at(0).get_keyword() == xppKeywords[0]) {
+			if (result.size() == 0 && lines[i].first.at(pos2) == '=') {
+				/* Number definition Name=expr */
+				opt.Name = lines[i].first.substr(pos1, pos2-pos1);
+			} else if (result.at(0).get_keyword() == xppKeywords[0]) {
 				/* !Name */
 				opt.Name = lines[i].first.substr(pos1+1, pos2-pos1-1);
 			} else if (result.at(0).get_keyword() == xppKeywords[3]) {
@@ -326,7 +329,9 @@ void xppParser::extractDefinition(void) {
 			opt.Expr = getNextExpr(lines[i], pos1, pos2);
 
 			/* Find the type of the keyword */
-			if (result.at(0).get_keyword() == xppKeywords[0]) {
+			if (result.size() == 0 && lines[i].first.at(pos2) == '=') {
+				Internal.push_back(opt);
+			} else if (result.at(0).get_keyword() == xppKeywords[0]) {
 				Constants.push_back(opt);
 			} else if (result.at(0).get_keyword() == xppKeywords[1] ||
 					   result.at(0).get_keyword() == xppKeywords[2]) {
