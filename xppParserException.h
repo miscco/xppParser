@@ -3,6 +3,9 @@
 
 #include <exception>
 #include <string>
+#include <utility>
+
+typedef std::pair<std::string, int> lineNumber;
 
 /* Different parser errors */
 enum xppParserError {
@@ -26,8 +29,7 @@ private:
 	std::string m_msg;
 public:
 	explicit xppParserException(const xppParserError msgType,
-								const std::string& line,
-								const unsigned lineNumber,
+								const lineNumber line,
 								const size_t pos)
 	{
 		switch (msgType) {
@@ -68,8 +70,8 @@ public:
 			m_msg = std::string("Wrong assignment of table expression");
 			break;
 		}
-		m_msg += " in line " + std::to_string(lineNumber+1) + ":\n";
-		m_msg += line + "\n";
+		m_msg += " in line " + std::to_string(line.second) + ":\n";
+		m_msg += line.first + "\n";
 		m_msg += std::string(pos, ' ') + "^\n";
 	}
 

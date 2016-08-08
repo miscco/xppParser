@@ -15,14 +15,17 @@
 #include "mpParser.h"
 #include "mpDefines.h"
 
-
+/* Basic structure that contains the textual information of an expression*/
 typedef struct {
 	std::string					Name;
 	std::string					Expr;
 	std::vector<std::string>	Args;
 } opts;
 
-typedef std::vector<opts> optsArray;
+/* Pair containing a parsed line and the original line number in the ode file.
+ * This is mainly usefull for debugging if an error is thrown.
+ */
+typedef std::pair<std::string, int> lineNumber;
 
 class xppParser {
 public:
@@ -30,8 +33,8 @@ public:
 
 private:
 	void expandArrays		(void);
-	void expandArrayLines	(std::vector<std::string> &lines,
-							 const std::vector<std::string> &expressions,
+	void expandArrayLines	(std::vector<lineNumber> &lines,
+							 const std::vector<lineNumber> &expressions,
 							 int idx);
 	void extractDefinition	(void);
 	void extractExport		(void);
@@ -47,11 +50,12 @@ private:
 
 	/* Helper functions */
 	void checkBrackets		(void);
-	int  checkName			(const std::string&);
-	void findNextAssignment (const std::string&, size_t& , size_t&);
-	std::vector<std::string> getList (const std::string&, std::string, std::string);
-	std::string getNextExpr (const std::string&, size_t& ,size_t&);
-	std::string getNextWord (const std::string&, size_t& ,size_t&);
+	int  checkName			(const std::string &name);
+	void findNextAssignment (const lineNumber &line, size_t &pos1, size_t &pos2);
+	std::vector<std::string> getList (const std::string &line, int ln,
+									  std::string closure, std::string delim);
+	std::string getNextExpr (const lineNumber &line, size_t &pos1,size_t &pos2);
+	std::string getNextWord (const lineNumber &line, size_t &pos1,size_t &pos2);
 
 	/* Filename of the ode file */
 	const std::string			fileName;
@@ -60,29 +64,29 @@ private:
 	std::set<std::string>		usedNames;
 
 	/* Vector containing the individual lines from the ode file */
-	std::vector<std::string>	lines;
+	std::vector<lineNumber>		lines;
 
 	/* The corresponding keyword tree */
 	aho_corasick::trie keywordTree;
 
 	/* Options arrays */
-	optsArray Algebraic;
-	optsArray Auxiliar;
-	optsArray Boundaries;
-	optsArray Constants;
-	optsArray Equations;
-	optsArray Exports;
-	optsArray Functions;
-	optsArray Globals;
-	optsArray InitConds;
-	optsArray Markovs;
-	optsArray Numbers;
-	optsArray Options;
-	optsArray Parameters;
-	optsArray Special;
-	optsArray Sets;
-	optsArray Tables;
-	optsArray Volterra;
+	std::vector<opts> Algebraic;
+	std::vector<opts> Auxiliar;
+	std::vector<opts> Boundaries;
+	std::vector<opts> Constants;
+	std::vector<opts> Equations;
+	std::vector<opts> Exports;
+	std::vector<opts> Functions;
+	std::vector<opts> Globals;
+	std::vector<opts> InitConds;
+	std::vector<opts> Markovs;
+	std::vector<opts> Numbers;
+	std::vector<opts> Options;
+	std::vector<opts> Parameters;
+	std::vector<opts> Special;
+	std::vector<opts> Sets;
+	std::vector<opts> Tables;
+	std::vector<opts> Volterra;
 	opts	  Wieners;
 };
 
