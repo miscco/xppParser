@@ -364,6 +364,10 @@ void xppParser::extractDefinition(void) {
 			} else if (result.at(0).get_keyword() == xppKeywords[14]) {
 				Algebraic.push_back(opt);
 			} else if (result.at(0).get_keyword() == xppKeywords[15]) {
+				pos1 = opt.Expr.find("(");
+				opt.Args = getList(opt.Expr.substr(pos1),
+								   lines[i].second, ")", ",");
+				opt.Expr.resize(pos1);
 				Special.push_back(opt);
 			} else if (result.at(0).get_keyword() == xppKeywords[16]) {
 				/* Sets are a comma separated list */
