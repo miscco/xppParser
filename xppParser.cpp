@@ -50,6 +50,9 @@ xppParser::xppParser(std::string fn)
 		/* Extract all other definitions */
 		extractDefinition();
 
+		/* Print out the parsed expressions */
+		summarizeOde();
+
 		/* Catch errors */
 	} catch (xppParserException& e) {
 		std::cerr << e.what();
@@ -890,5 +893,70 @@ void xppParser::removeWhitespace() {
 			lines[i].first.resize(pos1+1);
 		}
 		i++;
+	}
+}
+
+/**
+ * @brief Returns the different parsed objects and their definition
+ */
+void xppParser::summarizeOde() {
+	for (unsigned i=0; i < Constants.size(); i++) {
+		std::cout << "Added contant " << Constants[i].Name
+				  << "=" << Constants[i].Expr << std::endl;
+	}
+	for (unsigned i=0; i < Numbers.size(); i++) {
+		std::cout << "Added number " << Numbers[i].Name
+				  << "=" << Numbers[i].Expr << std::endl;
+	}
+	for (unsigned i=0; i < Internal.size(); i++) {
+		std::cout << "Added temporary " << Internal[i].Name
+				  << "=" << Internal[i].Expr << std::endl;
+	}
+	for (unsigned i=0; i < Parameters.size(); i++) {
+		std::cout << "Added parameter " << Parameters[i].Name
+				  << "=" << Parameters[i].Expr << std::endl;
+	}
+	for (unsigned i=0; i < Algebraic.size(); i++) {
+		std::cout << "Added algebraic expression " << Algebraic[i].Name
+				  << "=" << Algebraic[i].Expr << std::endl;
+	}
+	for (unsigned i=0; i < Auxiliar.size(); i++) {
+		std::cout << "Added auxiliar variable " << Auxiliar[i].Name
+				  << "=" << Auxiliar[i].Expr << std::endl;
+	}
+	for (unsigned i=0; i < Boundaries.size(); i++) {
+		std::cout << "Added boundary condition: " << Boundaries[i].Expr
+				  << std::endl;
+	}
+	for (unsigned i=0; i < Globals.size(); i++) {
+		std::cout << "Added delta function " << Globals[i].Name
+				  << "=" << Globals[i].Expr << std::endl;
+	}
+	for (unsigned i=0; i < Functions.size(); i++) {
+		std::cout << "Added function " << Functions[i].Name
+				  << "=" << Functions[i].Expr << std::endl;
+	}
+	for (unsigned i=0; i < Equations.size(); i++) {
+		std::cout << "Added ODE " << Equations[i].Name
+				  << "'=" << Equations[i].Expr << std::endl;
+	}
+	for (unsigned i=0; i < Volterra.size(); i++) {
+		std::cout << "Added differential ODE " << Volterra[i].Name
+				  << "=" << Volterra[i].Expr << std::endl;
+	}
+	if (Wieners.Args.size() > 0) {
+		std::cout << "Added wiener processes ";
+		for (unsigned i=0; i < Wieners.Args.size(); i++) {
+			std::cout << Wieners.Args[i] << " ";
+		}
+		std::cout << std::endl;
+	}
+	for (unsigned i=0; i < Markovs.size(); i++) {
+		std::cout << "Added markov processes " << Markovs[i].Name
+				  << std::endl;
+	}
+	for (unsigned i=0; i < InitConds.size(); i++) {
+		std::cout << "Set initial conditions " << InitConds[i].Name
+				  << "=" << InitConds[i].Expr << std::endl;
 	}
 }

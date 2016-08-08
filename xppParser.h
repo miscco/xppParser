@@ -35,7 +35,7 @@ private:
 	void readFile			(void);
 	void removeComments		(void);
 	void removeWhitespace	(void);
-	void splitLines			(void);
+	void summarizeOde		(void);
 
 	/* Helper functions */
 	void checkBrackets		(void);
