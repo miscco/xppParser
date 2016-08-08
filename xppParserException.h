@@ -12,6 +12,7 @@ enum xppParserError {
 	EXPECTED_LIST_ARGUMENT,
 	EXPECTED_NUMBER,
 	EXPECTED_TABLE_ASSIGNMENT,
+	RESERVED_FUNCTION,
 	RESERVED_KEYWORD,
 	UNKNOWN_ASSIGNMENT,
 	WRONG_ARRAY_ASSIGNMENT,
@@ -48,8 +49,11 @@ public:
 		case EXPECTED_TABLE_ASSIGNMENT:
 			m_msg = std::string("Missing value for the lookup table");
 			break;
+		case RESERVED_FUNCTION:
+			m_msg = std::string("Given function name is reserved");
+			break;
 		case RESERVED_KEYWORD:
-			m_msg = std::string("Given name is already a reserved keyword");
+			m_msg = std::string("Given name is reserved");
 			break;
 		case UNKNOWN_ASSIGNMENT:
 			m_msg = std::string("Unknown assignment");

@@ -10,7 +10,8 @@ SOURCES +=	main.cpp \
 			xppParser.cpp
 
 HEADERS +=	xppParser.h \
-			xppParserException.h
+			xppParserException.h \
+    xppParserDefines.h
 
 PRECOMPILED_HEADER += aho_corasick/aho_corasick.hpp
 

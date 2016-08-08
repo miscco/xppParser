@@ -62,33 +62,6 @@ private:
 	/* Vector containing the individual lines from the ode file */
 	std::vector<std::string>	lines;
 
-	/* Keywords utilized in the ode file */
-	const std::vector<std::string> keywords = {
-		"!",
-		"(t+1)",
-		"'",
-		"/dt",
-		"(t)",
-		"volt",
-		// "markov", /* Handled separately */
-		"aux",
-		"par",
-		"number",
-		"(",		/* Handled separately to discriminate odes and volterra */
-		//"table",  /* This is handeled separately */
-		//"wiener", /* Handled separately */
-		//"global",
-		"init",
-		"(0)",
-		"bdry",
-		"0=",
-		"solve",
-		"special",
-		"set",
-		"@",
-		"export"
-	};
-
 	/* The corresponding keyword tree */
 	aho_corasick::trie keywordTree;
 

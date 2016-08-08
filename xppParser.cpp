@@ -1,5 +1,7 @@
 #include <xppParser.h>
 
+#include <xppParserDefines.h>
+
 /**
  * @brief Constructor of the parser object
  *
@@ -129,20 +131,19 @@ void xppParser::checkBrackets() {
  *
  * @par name: The name of the new definition
  *
- * @return 0 on success or error values if the name is taken.
+ * @return -1 on success or error values if the name is taken.
  */
 int xppParser::checkName(const std::string &name) {
-	if (usedNames.find(name) == usedNames.end()) {
-		usedNames.insert(name);
-	} else {
+	if (usedNames.find(name) != usedNames.end()) {
+		return DUPLICATED_NAME;
+	} else if (xppReservedNames.find(name) != xppReservedNames.end()) {
+		return RESERVED_FUNCTION;
+	} else if (std::find(xppKeywords.begin(), xppKeywords.end(), name) ==
+			   xppKeywords.end()) {
 		return RESERVED_KEYWORD;
 	}
 
-	if (std::find(keywords.begin(), keywords.end(), name) == keywords.end()) {
-		usedNames.insert(name);
-	} else {
-		return DUPLICATED_NAME;
-	}
+	usedNames.insert(name);
 	return -1;
 }
 
@@ -296,24 +297,24 @@ void xppParser::extractDefinition(void) {
 			opts opt;
 
 			/* A keyword integrated into the name was found */
-			if (result.at(0).get_keyword() == keywords[0]) {
+			if (result.at(0).get_keyword() == xppKeywords[0]) {
 				/* !Name */
 				opt.Name = lines[i].substr(pos1+1, pos2-pos1-1);
-			} else if (result.at(0).get_keyword() == keywords[3]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[3]) {
 				/* dName/dt */
 				opt.Name = lines[i].substr(pos1+1, result.at(0).get_start()-1);
-			} else if (result.at(0).get_keyword() == keywords[13]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[13]) {
 				/* 0= Expression */
 				opt.Name = "Initial Condition";
-			} else if (result.at(0).get_keyword() == keywords[1] ||
-					   result.at(0).get_keyword() == keywords[2] ||
-					   result.at(0).get_keyword() == keywords[4] ||
-					   result.at(0).get_keyword() == keywords[11]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[1] ||
+					   result.at(0).get_keyword() == xppKeywords[2] ||
+					   result.at(0).get_keyword() == xppKeywords[4] ||
+					   result.at(0).get_keyword() == xppKeywords[11]) {
 				/* Name(t+1) or Name' */
 				/* Name(t) */
 				/* Name(0) */
 				opt.Name = lines[i].substr(pos1, result.at(0).get_start());
-			} else if (result.at(0).get_keyword() == keywords[9]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[9]) {
 				/* Name(args...) */
 				size_t pos3 = lines[i].find("(", pos1);
 				opt.Name = lines[i].substr(pos1, pos3-pos1);
@@ -322,10 +323,12 @@ void xppParser::extractDefinition(void) {
 				opt.Name = getNextWord(lines[i], pos1, pos2);
 			}
 			/* Check whether the name is valid except for initial conditions */
-			if (result.at(0).get_keyword() != keywords[10]) {
+			if (result.at(0).get_keyword() != xppKeywords[10]) {
 				int isValidName = checkName(opt.Name);
 				if (isValidName == DUPLICATED_NAME) {
 					throw xppParserException(DUPLICATED_NAME, lines[i], i, pos1);
+				} else if (isValidName == RESERVED_FUNCTION) {
+					throw xppParserException(RESERVED_FUNCTION, lines[i], i, pos1);
 				} else if (isValidName == RESERVED_KEYWORD) {
 					throw xppParserException(RESERVED_KEYWORD, lines[i], i, pos1);
 				}
@@ -335,48 +338,48 @@ void xppParser::extractDefinition(void) {
 			opt.Expr = getNextExpr(lines[i], pos1, pos2);
 
 			/* Find the type of the keyword */
-			if (result.at(0).get_keyword() == keywords[0]) {
+			if (result.at(0).get_keyword() == xppKeywords[0]) {
 				Constants.push_back(opt);
-			} else if (result.at(0).get_keyword() == keywords[1] ||
-					   result.at(0).get_keyword() == keywords[2]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[1] ||
+					   result.at(0).get_keyword() == xppKeywords[2]) {
 				Equations.push_back(opt);
-			} else if (result.at(0).get_keyword() == keywords[3]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[3]) {
 				Equations.push_back(opt);
-			} else if (result.at(0).get_keyword() == keywords[4]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[4]) {
 				Volterra.push_back(opt);
-			} else if (result.at(0).get_keyword() == keywords[5]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[5]) {
 				Constants.push_back(opt);
-			} else if (result.at(0).get_keyword() == keywords[6]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[6]) {
 				Auxiliar.push_back(opt);
-			} else if (result.at(0).get_keyword() == keywords[7]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[7]) {
 				Parameters.push_back(opt);
-			} else if (result.at(0).get_keyword() == keywords[8]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[8]) {
 				Numbers.push_back(opt);
-			} else if (result.at(0).get_keyword() == keywords[9]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[9]) {
 				Functions.push_back(opt);
-			} else if (result.at(0).get_keyword() == keywords[10]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[10]) {
 				InitConds.push_back(opt);
-			} else if (result.at(0).get_keyword() == keywords[11]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[11]) {
 				Volterra.push_back(opt);
-			} else if (result.at(0).get_keyword() == keywords[12]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[12]) {
 				/* Boundary expressions do not have a name */
 				opt.Expr = opt.Name;
 				opt.Name = "";
 				Boundaries.push_back(opt);
-			} else if (result.at(0).get_keyword() == keywords[13]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[13]) {
 				Volterra.push_back(opt);
-			} else if (result.at(0).get_keyword() == keywords[14]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[14]) {
 				Algebraic.push_back(opt);
-			} else if (result.at(0).get_keyword() == keywords[15]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[15]) {
 				Special.push_back(opt);
-			} else if (result.at(0).get_keyword() == keywords[16]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[16]) {
 				/* Sets are a comma separated list */
 				opt.Args = getList(opt.Expr, "}", ",");
 				opt.Expr = "";
 				Sets.push_back(opt);
-			} else if (result.at(0).get_keyword() == keywords[17]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[17]) {
 				Options.push_back(opt);
-			} else if (result.at(0).get_keyword() == keywords[18]) {
+			} else if (result.at(0).get_keyword() == xppKeywords[18]) {
 				Exports.push_back(opt);
 			} else {
 				throw xppParserException(UNKNOWN_ASSIGNMENT, lines[i], i, pos1+1);
@@ -435,6 +438,8 @@ void xppParser::extractGlobal(void) {
 			int isValidName = checkName(opt.Name);
 			if (isValidName == DUPLICATED_NAME) {
 				throw xppParserException(DUPLICATED_NAME, lines[i], i, pos1);
+			} else if (isValidName == RESERVED_FUNCTION) {
+				throw xppParserException(RESERVED_FUNCTION, lines[i], i, pos1);
 			} else if (isValidName == RESERVED_KEYWORD) {
 				throw xppParserException(RESERVED_KEYWORD, lines[i], i, pos1);
 			}
@@ -476,6 +481,8 @@ void xppParser::extractMarkov(void) {
 			int isValidName = checkName(opt.Name);
 			if (isValidName == DUPLICATED_NAME) {
 				throw xppParserException(DUPLICATED_NAME, lines[i], i, pos1);
+			} else if (isValidName == RESERVED_FUNCTION) {
+				throw xppParserException(RESERVED_FUNCTION, lines[i], i, pos1);
 			} else if (isValidName == RESERVED_KEYWORD) {
 				throw xppParserException(RESERVED_KEYWORD, lines[i], i, pos1);
 			}
@@ -535,6 +542,8 @@ void xppParser::extractTable(void) {
 			int isValidName = checkName(opt.Name);
 			if (isValidName == DUPLICATED_NAME) {
 				throw xppParserException(DUPLICATED_NAME, lines[i], i, pos1);
+			} else if (isValidName == RESERVED_FUNCTION) {
+				throw xppParserException(RESERVED_FUNCTION, lines[i], i, pos1);
 			} else if (isValidName == RESERVED_KEYWORD) {
 				throw xppParserException(RESERVED_KEYWORD, lines[i], i, pos1);
 			}
@@ -654,6 +663,8 @@ void xppParser::extractWiener(void) {
 				int isValidName = checkName(Wieners.Args.back());
 				if (isValidName == DUPLICATED_NAME) {
 					throw xppParserException(DUPLICATED_NAME, lines[i], i, pos1);
+				} else if (isValidName == RESERVED_FUNCTION) {
+					throw xppParserException(RESERVED_FUNCTION, lines[i], i, pos1);
 				} else if (isValidName == RESERVED_KEYWORD) {
 					throw xppParserException(RESERVED_KEYWORD, lines[i], i, pos1);
 				}
@@ -781,8 +792,8 @@ std::string xppParser::getNextWord(const std::string& line, size_t &pos1, size_t
  * @brief Initializes the keyword tree from the keyword list
  */
 void xppParser::initializeTree (void) {
-	for (size_t i=0; i < keywords.size(); i++) {
-		keywordTree.insert(keywords.at(i));
+	for (size_t i=0; i < xppKeywords.size(); i++) {
+		keywordTree.insert(xppKeywords.at(i));
 	}
 	keywordTree.remove_overlaps();
 }
