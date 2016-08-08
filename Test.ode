@@ -1,0 +1,64 @@
+#Test ode file for xppParser
+param g_1=0.0, g_2=0.025
+  
+!tau=20
+
+  #Conductances 
+!gamma=0.2#Test comment
+
+global 1 x-1 {x=0;y=y+a*sin(y)}
+
+Function(Arg1, Arg2, Arg3)= 1*2
+
+markov z 2
+{0} {alpha(v)}
+{beta(v)} {0}
+
+z[1..4]'=-z[j]+[j]
+
+aux test = N_rr+N_tr
+
+%[1..4]
+x[j]'=-y[j]-x[j-1]
+y[j]'=x[j]
+%
+
+special k=conv(even,101,21,w,u0)
+
+table h % 101 0 6.283 sin(t)+.6+.4*cos(t)+.2*sin(2*t)
+
+wiener Stoch1 Stoch2 Stoch3 Stoch4
+
+bdry u'-v-1
+
+set hopf {a=.3,x=1.2,b=9}
+
+#Functions
+Qt(Vt   )=Q_max/(1+exp(-C*(Vt-theta)/sigma))
+Qr(Vr)=Q_max   / (1+exp(-C*(Vr-theta)/sigma))
+
+I_tr(Vr,s_er)=s_er*(Vr-E_AMPA)
+I_rt(Vt,s_rt)=s_rt*(Vt-E_GABA)
+I_rr(Vr,s_rr)=s_rr*(Vr-E_GABA)
+
+#System equation
+Vt'=-(I_rt(Vt,s_rt))/tau
+Vr(t)=-(I_tr(Vr,s_er)+I_rr(Vr,s_rr))/tau
+ds_er/dt=x_er
+s_rt'=x_rt
+s_rr'=x_rr
+x_er'=gamma*gamma*(Qt(Vt)-s_er)-2*gamma*x_er
+x_rt'=gamma*gamma*(Qr(Vr)-s_rt)-2*gamma*x_rt
+x_rr'=gamma*gamma*(Qr(Vr)-s_rr)-2*gamma*x_rr
+
+volterra DelayDiff = stuff
+
+# define the initial states
+init Vt=-68,Vr=-68
+
+# simulation settings
+@ maxstor=1000000,total=3000,dt=0.1,meth=rungekutta,njmp=10,bound=200
+@ YLO=-80,YHI=0,XLO=0,XHI=3000
+@ nmax=800,npr=0,ntst=300,epsl=1e-9,epss=1e-7,epsu=1e-7,parmin=0,parmax=0.1,
+@ autoxmin=0,autoxmax=0.1,autoymin=-100,autoymax=0, ds=1e-3,dsmin=1e-5,dsmax=0.5
+done
