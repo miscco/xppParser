@@ -1,7 +1,5 @@
 #include <xppParser.h>
 
-#include <xppParserDefines.h>
-
 /**
  * @brief Constructor of the parser object
  *
@@ -269,7 +267,7 @@ void xppParser::expandArrayLines(std::vector<lineNumber>& lines,
 }
 
 /**
- * @brief Extract definitions within the ode file
+ * @brief Extract definitions from the ode file
  *
  * This extracts definitions that are given in the keyword list and are marked
  * by an equal sign.
@@ -287,7 +285,7 @@ void xppParser::extractDefinition(void) {
 		}
 
 		/* Parse the keyword */
-		auto result = keywordTree.parse_text(lines[i].first.substr(pos1, pos2-pos1));
+		auto result = keywordTrie.parse_text(lines[i].first.substr(pos1, pos2-pos1));
 
 		while (pos2 != std::string::npos) {
 			opts opt;
@@ -615,7 +613,6 @@ void xppParser::extractTable(void) {
 				fileStream.close();
 			}
 			Tables.push_back(opt);
-			std::cout << "Added table " << opt.Name << std::endl;
 			lines.erase(lines.begin() + i);
 		} else {
 			i++;
@@ -639,7 +636,6 @@ void xppParser::extractWiener(void) {
 			while (pos2 != std::string::npos) {
 				Wieners.Args.push_back(getNextWord(lines[i], pos1, pos2));
 				checkName(Wieners.Args.back(), lines[i], pos1);
-				std::cout << "Added wiener process " << Wieners.Args.back() << std::endl;
 			}
 			lines.erase(lines.begin() + i);
 		} else {
@@ -768,9 +764,9 @@ std::string xppParser::getNextWord(const lineNumber& line,
  */
 void xppParser::initializeTree (void) {
 	for (size_t i=0; i < xppKeywords.size(); i++) {
-		keywordTree.insert(xppKeywords.at(i));
+		keywordTrie.insert(xppKeywords.at(i));
 	}
-	keywordTree.remove_overlaps();
+	keywordTrie.remove_overlaps();
 }
 
 /**

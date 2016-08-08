@@ -9,23 +9,12 @@
 #include <utility>
 #include <vector>
 
-#include "xppParserException.h"
-
 #include "aho_corasick/aho_corasick.hpp"
 #include "mpParser.h"
 #include "mpDefines.h"
 
-/* Basic structure that contains the textual information of an expression*/
-typedef struct {
-	std::string					Name;
-	std::string					Expr;
-	std::vector<std::string>	Args;
-} opts;
-
-/* Pair containing a parsed line and the original line number in the ode file.
- * This is mainly usefull for debugging if an error is thrown.
- */
-typedef std::pair<std::string, int> lineNumber;
+#include "xppParserDefines.h"
+#include "xppParserException.h"
 
 class xppParser {
 public:
@@ -58,16 +47,16 @@ private:
 	std::string getNextWord (const lineNumber &line, size_t &pos1,size_t &pos2);
 
 	/* Filename of the ode file */
-	const std::string			fileName;
+	const std::string		fileName;
 
 	/* List of the already used names */
-	std::set<std::string>		usedNames;
+	std::set<std::string>	usedNames;
 
 	/* Vector containing the individual lines from the ode file */
-	std::vector<lineNumber>		lines;
+	std::vector<lineNumber>	lines;
 
-	/* The corresponding keyword tree */
-	aho_corasick::trie keywordTree;
+	/* The corresponding keyword trie */
+	aho_corasick::trie		keywordTrie;
 
 	/* Options arrays */
 	std::vector<opts> Algebraic;
@@ -87,7 +76,7 @@ private:
 	std::vector<opts> Sets;
 	std::vector<opts> Tables;
 	std::vector<opts> Volterra;
-	opts	  Wieners;
+	opts			  Wieners;
 };
 
 #endif // PARSER_H

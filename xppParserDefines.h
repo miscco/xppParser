@@ -5,6 +5,19 @@
 #include <utility>
 #include <vector>
 
+
+/* Basic structure that contains the textual information of an expression*/
+typedef struct {
+	std::string					Name;
+	std::string					Expr;
+	std::vector<std::string>	Args;
+} opts;
+
+/* Pair containing a parsed line and the original line number in the ode file.
+ * This is mainly usefull for debugging if an error is thrown.
+ */
+typedef std::pair<std::string, int> lineNumber;
+
 static const std::set<std::string> xppReservedNames {
 	"sin",
 	"cos",

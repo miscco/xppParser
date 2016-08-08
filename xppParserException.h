@@ -5,7 +5,7 @@
 #include <string>
 #include <utility>
 
-typedef std::pair<std::string, int> lineNumber;
+#include "xppParserDefines.h"
 
 /* Different parser errors */
 enum xppParserError {
