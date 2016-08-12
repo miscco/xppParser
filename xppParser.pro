@@ -7,11 +7,13 @@ CONFIG -= qt
 include(muparserx/muparserx.pri)
 
 SOURCES +=	main.cpp \
-			xppParser.cpp
+			xppParser.cpp \
+    xppEvaluator.cpp
 
 HEADERS +=	xppParser.h \
 			xppParserException.h \
-    xppParserDefines.h
+    xppParserDefines.h \
+    xppEvaluator.h
 
 PRECOMPILED_HEADER += aho_corasick/aho_corasick.hpp
 

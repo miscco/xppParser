@@ -80,6 +80,7 @@ MUP_NAMESPACE_START
     MUP_UNARY_FUNC_DEF(FunCbrt)
     MUP_UNARY_FUNC_DEF(FunExp)
     MUP_UNARY_FUNC_DEF(FunAbs)
+    MUP_UNARY_FUNC_DEF(FunFloor)
 #undef MUP_UNARY_FUNC_DEF
 
 #define MUP_BINARY_FUNC_DEF(CLASS)                                          \

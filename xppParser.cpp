@@ -65,6 +65,28 @@ xppParser::xppParser(std::string fn)
 		throw;
 	}
 }
+xppParser::xppParser(const xppParser &parser)
+	: usedNames(parser.usedNames),
+	  Algebraic(parser.Algebraic),
+	  Auxiliar(parser.Auxiliar),
+	  Boundaries(parser.Boundaries),
+	  Constants(parser.Constants),
+	  Equations(parser.Equations),
+	  Exports(parser.Exports),
+	  Functions(parser.Functions),
+	  Globals(parser.Globals),
+	  InitConds(parser.InitConds),
+	  Internal(parser.Internal),
+	  Markovs(parser.Markovs),
+	  Numbers(parser.Numbers),
+	  Options(parser.Options),
+	  Parameters(parser.Parameters),
+	  Special(parser.Special),
+	  Sets(parser.Sets),
+	  Tables(parser.Tables),
+	  Volterra(parser.Volterra),
+	  Wieners(parser.Wieners)
+{}
 
 /**
  * @brief Checks whether brackets are closed properly
@@ -779,6 +801,7 @@ void xppParser::initializeTree (void) {
 		keywordTrie.insert(xppKeywords.at(i));
 	}
 	keywordTrie.remove_overlaps();
+	keywordTrie.only_whole_words();
 }
 
 /**

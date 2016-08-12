@@ -13,6 +13,9 @@ typedef struct {
 	std::vector<std::string>	Args;
 } opts;
 
+/* Array of opts structures */
+typedef std::vector<opts> optsArray;
+
 /* Pair containing a parsed line and the original line number in the ode file.
  * This is mainly usefull for debugging if an error is thrown.
  */

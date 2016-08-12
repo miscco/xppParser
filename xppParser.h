@@ -18,7 +18,8 @@
 
 class xppParser {
 public:
-	xppParser(std::string);
+	xppParser(std::string fn);
+	xppParser(const xppParser &parser);
 
 private:
 	void expandArrays		(void);
@@ -59,25 +60,27 @@ private:
 	aho_corasick::trie		keywordTrie;
 
 	/* Options arrays */
-	std::vector<opts> Algebraic;
-	std::vector<opts> Auxiliar;
-	std::vector<opts> Boundaries;
-	std::vector<opts> Constants;
-	std::vector<opts> Equations;
-	std::vector<opts> Exports;
-	std::vector<opts> Functions;
-	std::vector<opts> Globals;
-	std::vector<opts> InitConds;
-	std::vector<opts> Internal;
-	std::vector<opts> Markovs;
-	std::vector<opts> Numbers;
-	std::vector<opts> Options;
-	std::vector<opts> Parameters;
-	std::vector<opts> Special;
-	std::vector<opts> Sets;
-	std::vector<opts> Tables;
-	std::vector<opts> Volterra;
-	opts			  Wieners;
+	optsArray Algebraic;
+	optsArray Auxiliar;
+	optsArray Boundaries;
+	optsArray Constants;
+	optsArray Equations;
+	optsArray Exports;
+	optsArray Functions;
+	optsArray Globals;
+	optsArray InitConds;
+	optsArray Internal;
+	optsArray Markovs;
+	optsArray Numbers;
+	optsArray Options;
+	optsArray Parameters;
+	optsArray Special;
+	optsArray Sets;
+	optsArray Tables;
+	optsArray Volterra;
+	opts	  Wieners;
+
+	friend class xppEvaluator;
 };
 
 #endif // PARSER_H
