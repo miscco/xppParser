@@ -92,47 +92,46 @@ xppParser::xppParser(const xppParser &parser)
  * @brief Checks whether brackets are closed properly
  */
 void xppParser::checkBrackets() {
-	using charPos = std::pair<char, size_t>;
-	std::stack<charPos> brackets;
-	for (unsigned i=0; i < lines.size(); i++) {
-		for (unsigned j=0; j < lines[i].first.size(); j++) {
-			switch (lines[i].first.at(j)) {
+	std::stack<std::pair<char, size_t>> brackets;
+	for (lineNumber line : lines) {
+		for (unsigned j=0; j < line.first.size(); j++) {
+			switch (line.first.at(j)) {
 			case '(':
-				brackets.push(charPos(')', j));
+				brackets.push(std::make_pair<char, size_t>(')', j));
 				break;
 			case '{':
-				brackets.push(charPos('}', j));
+				brackets.push(std::make_pair<char, size_t>('}', j));
 				break;
 			case '[':
-				brackets.push(charPos(']', j));
+				brackets.push(std::make_pair<char, size_t>(']', j));
 				break;
 			case ')':
 				if (brackets.empty()) {
 					throw xppParserException(MISSING_OPENING_BRACKET,
-											 lines[i], j);
+											 line, j);
 				} else if (brackets.top().first != ')') {
 					throw xppParserException(MISSING_CLOSING_BRACKET,
-											 lines[i], brackets.top().second);
+											 line, brackets.top().second);
 				}
 				brackets.pop();
 				break;
 			case '}':
 				if (brackets.empty()) {
 					throw xppParserException(MISSING_OPENING_BRACKET,
-											 lines[i], j);
+											 line, j);
 				} else if (brackets.top().first != '}') {
 					throw xppParserException(MISSING_CLOSING_BRACKET,
-											 lines[i], brackets.top().second);
+											 line, brackets.top().second);
 				}
 				brackets.pop();
 				break;
 			case ']':
 				if (brackets.empty()) {
 					throw xppParserException(MISSING_OPENING_BRACKET,
-											 lines[i], j);
+											 line, j);
 				} else if (brackets.top().first != ']') {
 					throw xppParserException(MISSING_CLOSING_BRACKET,
-											 lines[i], brackets.top().second);
+											 line, brackets.top().second);
 				}
 				brackets.pop();
 				break;
@@ -142,7 +141,7 @@ void xppParser::checkBrackets() {
 		}
 		if (!brackets.empty()) {
 			throw xppParserException(MISSING_CLOSING_BRACKET,
-									 lines[i], brackets.top().second);
+									 line, brackets.top().second);
 		}
 	}
 }
@@ -262,8 +261,8 @@ void xppParser::expandArrayLines(std::vector<lineNumber>& lines,
 	mup::Value j((mup::int_type)idx);
 	mup::Value result;
 	parser.DefineVar("j",  mup::Variable(&j));
-	for (unsigned i=0; i < expressions.size(); i++) {
-		lineNumber temp = expressions[i];
+	for (lineNumber expr : expressions) {
+		lineNumber temp = expr;
 		size_t pos1 = temp.first.find("[");
 		size_t pos2 = temp.first.find("]");
 		while (pos1 != std::string::npos) {
@@ -275,7 +274,7 @@ void xppParser::expandArrayLines(std::vector<lineNumber>& lines,
 
 			/* Check whether the result is an integer */
 			if (result.GetType() != 'i') {
-				throw xppParserException(WRONG_ARRAY_ASSIGNMENT, lines[i], pos1+1);
+				throw xppParserException(WRONG_ARRAY_ASSIGNMENT, expr, pos1+1);
 			}
 			temp.first.replace(pos1, pos2-pos1+1, result.ToString());
 
@@ -857,8 +856,8 @@ std::string xppParser::getNextWord(const lineNumber &line,
  * @brief Initializes the keyword tree from the keyword list
  */
 void xppParser::initializeTree (void) {
-	for (size_t i=0; i < xppKeywords.size(); i++) {
-		keywordTrie.insert(xppKeywords.at(i));
+	for (std::string key : xppKeywords) {
+		keywordTrie.insert(key);
 	}
 	keywordTrie.remove_overlaps();
 }
