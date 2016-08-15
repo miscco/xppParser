@@ -816,8 +816,8 @@ std::vector<std::string> xppParser::getList(const std::string& line,
  * @brief Gets the next expression between pos2 and a commata
  *
  * @par line: String we are searching in
- * @par	pos1: Old position of the start of the assignment will be updated to the
- * position after the commata or std::string::npos.
+ * @par	pos1: Old position. Will be updated to the position after the commata
+ * or std::string::npos.
  * @par	pos2: Position of the equal sign
  *
  * @return string: String between pos2 and the next commata outside of braces
@@ -826,7 +826,14 @@ std::string xppParser::getNextExpr(const lineNumber& line,
 								   size_t &pos1,
 								   size_t &pos2) {
 	findNextAssignment(line, pos1, pos2);
-	return line.first.substr(pos1+1, pos2-pos1-2);
+	std::string expr = line.first.substr(pos1+1, pos2-pos1-2);
+
+	/* Remove whitespaces in teh expression */
+	size_t pos;
+	while ((pos = expr.find_first_of(" \t\f\v\r")) != std::string::npos) {
+		expr.erase(pos);
+	}
+	return expr;
 }
 
 /**
