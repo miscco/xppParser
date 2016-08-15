@@ -745,7 +745,7 @@ void xppParser::extractWiener(void) {
  * that is not encapsulated by a bracket and update pos1 to the position after
  * it.
  */
-void xppParser::findNextAssignment(const lineNumber& line,
+void xppParser::findNextAssignment(const lineNumber &line,
 								   size_t &pos1,
 								   size_t &pos2) {
 	std::stack<char> brackets;
@@ -822,7 +822,7 @@ std::vector<std::string> xppParser::getList(const std::string& line,
  *
  * @return string: String between pos2 and the next commata outside of braces
  */
-std::string xppParser::getNextExpr(const lineNumber& line,
+std::string xppParser::getNextExpr(const lineNumber &line,
 								   size_t &pos1,
 								   size_t &pos2) {
 	findNextAssignment(line, pos1, pos2);
@@ -847,7 +847,7 @@ std::string xppParser::getNextExpr(const lineNumber& line,
  * @return pos2: Position of the first whitespace character after the word
  * @return string: String between [pos1, pos2-1]
  */
-std::string xppParser::getNextWord(const lineNumber& line,
+std::string xppParser::getNextWord(const lineNumber &line,
 								   size_t &pos1,
 								   size_t &pos2) {
 	pos1 = line.first.find_first_not_of(" ", pos2);
