@@ -228,17 +228,13 @@ void xppParser::expandArrays() {
 				 */
 				arrayExpressions[0].first.replace(pos1, pos3, "[j]");
 			}
-
-			/* Remove the old lines */
 			lines.erase(lines.begin()+i, lines.begin()+i+numLines);
 
-			/* Expand the array expressions */
+			/* Expand the array expressions and insert it*/
 			std::vector<lineNumber> arrayLines;
 			for (int i = start; i <= end; i++) {
 				expandArrayLines(arrayLines, arrayExpressions, i);
 			}
-
-			/* Insert the new lines back into the old position */
 			lines.insert(lines.begin()+i, arrayLines.begin(), arrayLines.end());
 		} else {
 			i++;
@@ -308,8 +304,6 @@ void xppParser::extractDefinition(void) {
 		if (pos2 == std::string::npos) {
 			throw xppParserException(UNKNOWN_ASSIGNMENT, lines[i], pos1+1);
 		}
-
-		/* Parse the keyword */
 		auto result = keywordTrie.parse_text(lines[i].first.substr(pos1, pos2-pos1));
 
 		while (pos2 != std::string::npos) {
@@ -345,7 +339,8 @@ void xppParser::extractDefinition(void) {
 				 * temporary.
 				 */
 				if(result.size() == 0) {
-					result.push_back(aho_corasick::emit<char>(-1, -1, "", xppKeywords.size()));
+					result.push_back(aho_corasick::emit<char>(-1, -1, "",
+															  xppKeywords.size()));
 				}
 			}
 
@@ -379,9 +374,15 @@ void xppParser::extractDefinition(void) {
 				break;
 			}
 
-			/* Check whether the name is valid except for initial conditions */
+			/* Check whether the name is already taken/reserved, except for
+			 * initial conditions, where we check fo existence.
+			 */
 			if (result.at(0).get_index() != 10) {
 				checkName(opt.Name, lines[i], pos1);
+			} else {
+				if (usedNames.find(opt.Name) == usedNames.end()) {
+					throw xppParserException(UNKNOWN_NAME, lines[i], pos1);
+				}
 			}
 
 			/* Get the expression */
@@ -481,12 +482,11 @@ void xppParser::extractExport(void) {
 		if (pos1 != std::string::npos) {
 			opts opt;
 			std::vector<std::string> temp;
-
-			/* Get the input arguments list */
 			temp = getList(getNextWord(lines[i], pos1, pos2),
 						   lines[i].second, "}", ",");
 			opt.Args = temp;
 			opt.Expr = std::to_string(temp.size());
+
 			temp = getList(getNextWord(lines[i], pos1, pos2),
 						   lines[i].second, "}", ",");
 			opt.Args.insert(opt.Args.end(), temp.begin(), temp.end());
@@ -828,7 +828,7 @@ std::string xppParser::getNextExpr(const lineNumber &line,
 	findNextAssignment(line, pos1, pos2);
 	std::string expr = line.first.substr(pos1+1, pos2-pos1-2);
 
-	/* Remove whitespaces in teh expression */
+	/* Remove whitespaces */
 	size_t pos;
 	while ((pos = expr.find_first_of(" \t\f\v\r")) != std::string::npos) {
 		expr.erase(pos);
@@ -873,7 +873,6 @@ void xppParser::initializeTree (void) {
  * all whitespaces.
  */
 void xppParser::readFile(void) {
-	/* Open file for parsing */
 	std::ifstream fileStream(fileName.c_str(), std::ios::in);
 	if (fileStream.fail()) {
 		throw std::runtime_error("Cannot open ode file " + fileName + "\n");
@@ -881,7 +880,7 @@ void xppParser::readFile(void) {
 
 	/* Parse in nonempty lines */
 	std::string temp;
-	int line = 1;
+	int lineCount = 1;
 	while(getline(fileStream, temp)) {
 		size_t pos1 = temp.find_first_not_of(" \t\f\v\r\n");
 		if (temp == "done") {
@@ -891,15 +890,15 @@ void xppParser::readFile(void) {
 			temp.erase(0, pos1);
 			temp.resize(temp.find_last_not_of(" \t\f\v\r\n")+1);
 			auto last = std::unique(temp.begin(), temp.end(),
-									[](char l, char r){return std::isspace(l) &&
+									[](char l, char r){
+				return std::isspace(l) &&
 						std::isspace(r);});
 			temp.erase(last, temp.end());
-			lines.push_back(std::make_pair(temp, line));
+			lines.push_back(std::make_pair(temp, lineCount));
 		}
-		line++;
+		lineCount++;
 	}
 
-	/* Check whether some lines have been parsed */
 	if (lines.size() == 0) {
 		throw std::runtime_error("Empty ode file " + fileName + "\n");
 	}
@@ -944,10 +943,10 @@ void xppParser::removeWhitespace() {
 	unsigned i=0;
 	while(i < lines.size()) {
 		std::size_t pos1, pos2, pos3;
-		/* Search for opening brackets */
+
+		/* Remove all whitespaces between brackets */
 		pos1 = lines[i].first.find("(");
 		if (pos1 != std::string::npos) {
-			/* Search for the closing bracket remove all whitespaces between */
 			pos2 = lines[i].first.find(")");
 			pos3 = lines[i].first.find_first_of(" \t\f\v\r", pos1);
 			while (pos3 < pos2) {
@@ -959,12 +958,10 @@ void xppParser::removeWhitespace() {
 		/* Search around the equal signs */
 		pos1 = lines[i].first.find("=");
 		if (pos1 != std::string::npos) {
-			/* Search for whitspace after equal sign */
 			pos2 = lines[i].first.find_first_not_of(" \t\f\v\r", pos1+1);
 			if (pos2 != pos1+1) {
 				lines[i].first.erase(pos1+1, pos2-pos1-1);
 			}
-			/* Search for whitspace before equal sign */
 			pos2 = lines[i].first.find_last_not_of(" \t\f\v\r", pos1-1);
 			if (pos2 != pos1-1) {
 				lines[i].first.erase(pos2+1, pos1-pos2-1);
