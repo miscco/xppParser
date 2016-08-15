@@ -501,7 +501,7 @@ void xppParser::extractExport(void) {
 /**
  * @brief Extract a global flag implementing a delta function
  *
- * This function extracts the condition and the sign of the flag and the resets
+ * This function extracts the condition, the sign of the flag and the resets
  */
 void xppParser::extractGlobal(void) {
 	unsigned i = 0;
