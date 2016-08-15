@@ -10,6 +10,7 @@
 /* Different parser errors */
 enum xppParserError {
 	DUPLICATED_NAME,
+	MISSING_ARGUMENT,
 	MISSING_CLOSING_BRACKET,
 	MISSING_OPENING_BRACKET,
 	EXPECTED_LIST_ARGUMENT,
@@ -36,6 +37,9 @@ public:
 		switch (msgType) {
 		case DUPLICATED_NAME:
 			m_msg = std::string("Name has already been reserved");
+			break;
+		case MISSING_ARGUMENT:
+			m_msg = std::string("Cannot find function argument");
 			break;
 		case MISSING_CLOSING_BRACKET:
 			m_msg = std::string("Cannot find closing bracket");

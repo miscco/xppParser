@@ -8,6 +8,7 @@
 
 /* Basic structure that contains the textual information of an expression*/
 typedef struct {
+	unsigned					Line;
 	std::string					Name;
 	std::string					Expr;
 	std::vector<std::string>	Args;
@@ -20,6 +21,41 @@ typedef std::vector<opts> optsArray;
  * This is mainly usefull for debugging if an error is thrown.
  */
 typedef std::pair<std::string, int> lineNumber;
+
+static const std::vector<std::string> xppKeywords = {
+	"!",
+	"(t+1)",
+	"'",
+	"/dt",
+	"(t)",
+	"volt",
+	// "markov", /* Handled separately */
+	"aux",
+	"par",
+	"number",
+	"(",		/* Handled separately to discriminate odes and volterra */
+	//"table",  /* This is handeled separately */
+	//"wiener", /* Handled separately */
+	//"global",
+	"init",
+	"(0)",
+	"bdry",
+	"0=",
+	"solve",
+	"special",
+	"set",
+	"@",
+	"export"
+};
+
+static const std::set<std::string> xppOperators {
+	"+",
+	"-",
+	"*",
+	"/",
+	"^",
+	"**"
+};
 
 static const std::set<std::string> xppReservedNames {
 	"sin",
@@ -63,32 +99,6 @@ static const std::set<std::string> xppReservedNames {
 	"sum",
 	"int",
 	"not"
-};
-
-static const std::vector<std::string> xppKeywords = {
-	"!",
-	"(t+1)",
-	"'",
-	"/dt",
-	"(t)",
-	"volt",
-	// "markov", /* Handled separately */
-	"aux",
-	"par",
-	"number",
-	"(",		/* Handled separately to discriminate odes and volterra */
-	//"table",  /* This is handeled separately */
-	//"wiener", /* Handled separately */
-	//"global",
-	"init",
-	"(0)",
-	"bdry",
-	"0=",
-	"solve",
-	"special",
-	"set",
-	"@",
-	"export"
 };
 
 #endif // XPPPARSERDEFINES_H
