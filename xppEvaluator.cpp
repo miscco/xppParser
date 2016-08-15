@@ -8,7 +8,7 @@ xppEvaluator::xppEvaluator(xppParser &p)
 	 */
 	std::vector<optsArray*> arrays = {
 		&parser.Constants,
-		&parser.Internal,
+		&parser.Temporaries,
 		&parser.Numbers,
 		&parser.Functions,
 		/* opts arrays that will only be searched */

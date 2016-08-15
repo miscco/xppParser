@@ -76,7 +76,7 @@ xppParser::xppParser(const xppParser &parser)
 	  Functions(parser.Functions),
 	  Globals(parser.Globals),
 	  InitConds(parser.InitConds),
-	  Internal(parser.Internal),
+	  Temporaries(parser.Temporaries),
 	  Markovs(parser.Markovs),
 	  Numbers(parser.Numbers),
 	  Options(parser.Options),
@@ -315,38 +315,72 @@ void xppParser::extractDefinition(void) {
 		while (pos2 != std::string::npos) {
 			opts opt;
 
-			/* A keyword integrated into the name was found */
-			if (result.size() == 0 && lines[i].first.at(pos2) == '=') {
-				/* Number definition Name=expr */
-				opt.Name = lines[i].first.substr(pos1, pos2-pos1);
-			} else if (result.at(0).get_keyword() == xppKeywords[0]) {
-				/* !Name */
+			/* Sanity check whether an temporary expression was found or the
+			 * parsed name contained a keyword. This is only relevant if there
+			 * was no separate keyword. To simplify the handling below, we set
+			 * get_index() of an temporary expression to size(keywords).
+			 */
+			if(lines[i].first.at(pos2) == '=') {
+				if (result.size() > 1) {
+					/* If multiple keywords were found, the name of the
+					 * expression contains a keyword. This is only possible if
+					 * it is either an expression or a keyword that is merged
+					 * with the name. Consequently remove all other findings.
+					 */
+					while (true) {
+						if (result.at(0).get_index() != 0 ||
+							result.at(0).get_index() != 1 ||
+							result.at(0).get_index() != 2 ||
+							result.at(0).get_index() != 3 ||
+							result.at(0).get_index() != 4 ||
+							result.at(0).get_index() != 9 ||
+							result.at(0).get_index() != 11) {
+							result.erase(result.begin());
+							break;
+						}
+					}
+				}
+
+				/* If there were no valid keywords found this must be a
+				 * temporary.
+				 */
+				if(result.size() == 0) {
+					result.push_back(aho_corasick::emit<char>(-1, -1, "", xppKeywords.size()));
+				}
+			}
+
+			switch (result.at(0).get_index()) {
+			case 0: /* !Name */
 				opt.Name = lines[i].first.substr(pos1+1, pos2-pos1-1);
-			} else if (result.at(0).get_keyword() == xppKeywords[3]) {
-				/* dName/dt */
-				opt.Name = lines[i].first.substr(pos1+1, result.at(0).get_start()-1);
-			} else if (result.at(0).get_keyword() == xppKeywords[13]) {
-				/* 0= Expression */
-				opt.Name = "Initial Condition";
-			} else if (result.at(0).get_keyword() == xppKeywords[1] ||
-					   result.at(0).get_keyword() == xppKeywords[2] ||
-					   result.at(0).get_keyword() == xppKeywords[4] ||
-					   result.at(0).get_keyword() == xppKeywords[11]) {
-				/* Name(t+1) or Name' */
-				/* Name(t) */
-				/* Name(0) */
+				break;
+			case 1:  /* Name(t+1) */
+			case 2:  /* Name' */
+			case 4:  /* Name(t) */
+			case 11: /* Name(0) */
 				opt.Name = lines[i].first.substr(pos1, result.at(0).get_start());
-			} else if (result.at(0).get_keyword() == xppKeywords[9]) {
-				/* Name(args...) */
+				break;
+			case 3: /* dName/dt */
+				opt.Name = lines[i].first.substr(pos1+1, result.at(0).get_start()-1);
+				break;
+			case 9: {/* Name(args...) */
 				size_t pos3 = lines[i].first.find("(", pos1);
 				opt.Name = lines[i].first.substr(pos1, pos3-pos1);
 				opt.Args = getList(lines[i].first.substr(pos3, pos2-pos3),
 								   lines[i].second, ")", ",");
-			} else {
-				opt.Name = getNextWord(lines[i], pos1, pos2);
+				break;
 			}
+			case 13: /* 0=Expression */
+				opt.Name = "Initial Condition";
+				break;
+			case 19: /* Name=Expression */
+				opt.Name = lines[i].first.substr(pos1, pos2-pos1);
+			default: /* keyword Name */
+				opt.Name = getNextWord(lines[i], pos1, pos2);
+				break;
+			}
+
 			/* Check whether the name is valid except for initial conditions */
-			if (result.at(0).get_keyword() != xppKeywords[10]) {
+			if (result.at(0).get_index() != 10) {
 				checkName(opt.Name, lines[i], pos1);
 			}
 
@@ -354,56 +388,77 @@ void xppParser::extractDefinition(void) {
 			opt.Expr = getNextExpr(lines[i], pos1, pos2);
 
 			/* Find the type of the keyword */
-			if (result.size() == 0 && lines[i].first.at(pos2) == '=') {
-				Internal.push_back(opt);
-			} else if (result.at(0).get_keyword() == xppKeywords[0]) {
+			switch(result.at(0).get_index()) {
+			case 0:
 				Constants.push_back(opt);
-			} else if (result.at(0).get_keyword() == xppKeywords[1] ||
-					   result.at(0).get_keyword() == xppKeywords[2]) {
+				break;
+			case 1:
+			case 2:
 				Equations.push_back(opt);
-			} else if (result.at(0).get_keyword() == xppKeywords[3]) {
+				break;
+			case 3:
 				Equations.push_back(opt);
-			} else if (result.at(0).get_keyword() == xppKeywords[4]) {
+				break;
+			case 4:
 				Volterra.push_back(opt);
-			} else if (result.at(0).get_keyword() == xppKeywords[5]) {
+				break;
+			case 5:
 				Constants.push_back(opt);
-			} else if (result.at(0).get_keyword() == xppKeywords[6]) {
+				break;
+			case 6:
 				Auxiliar.push_back(opt);
-			} else if (result.at(0).get_keyword() == xppKeywords[7]) {
+				break;
+			case 7:
 				Parameters.push_back(opt);
-			} else if (result.at(0).get_keyword() == xppKeywords[8]) {
+				break;
+			case 8:
 				Numbers.push_back(opt);
-			} else if (result.at(0).get_keyword() == xppKeywords[9]) {
+				break;
+			case 9:
 				Functions.push_back(opt);
-			} else if (result.at(0).get_keyword() == xppKeywords[10]) {
+				break;
+			case 10:
 				InitConds.push_back(opt);
-			} else if (result.at(0).get_keyword() == xppKeywords[11]) {
+				break;
+			case 11:
 				Volterra.push_back(opt);
-			} else if (result.at(0).get_keyword() == xppKeywords[12]) {
+				break;
+			case 12:
 				/* Boundary expressions do not have a name */
 				opt.Expr = opt.Name;
 				opt.Name = "";
 				Boundaries.push_back(opt);
-			} else if (result.at(0).get_keyword() == xppKeywords[13]) {
+				break;
+			case 13:
 				Volterra.push_back(opt);
-			} else if (result.at(0).get_keyword() == xppKeywords[14]) {
+				break;
+			case 14:
 				Algebraic.push_back(opt);
-			} else if (result.at(0).get_keyword() == xppKeywords[15]) {
+				break;
+			case 15:
+				/* Extract the argument list */
 				pos1 = opt.Expr.find("(");
 				opt.Args = getList(opt.Expr.substr(pos1),
 								   lines[i].second, ")", ",");
 				opt.Expr.resize(pos1);
 				Special.push_back(opt);
-			} else if (result.at(0).get_keyword() == xppKeywords[16]) {
+				break;
+			case 16:
 				/* Sets are a comma separated list */
 				opt.Args = getList(opt.Expr, lines[i].second, "}", ",");
 				opt.Expr = "";
 				Sets.push_back(opt);
-			} else if (result.at(0).get_keyword() == xppKeywords[17]) {
+				break;
+			case 17:
 				Options.push_back(opt);
-			} else if (result.at(0).get_keyword() == xppKeywords[18]) {
+				break;
+			case 18:
 				Exports.push_back(opt);
-			} else {
+				break;
+			case 19:
+				Temporaries.push_back(opt);
+				break;
+			default:
 				throw xppParserException(UNKNOWN_ASSIGNMENT, lines[i], pos1+1);
 			}
 		}
@@ -801,7 +856,6 @@ void xppParser::initializeTree (void) {
 		keywordTrie.insert(xppKeywords.at(i));
 	}
 	keywordTrie.remove_overlaps();
-	keywordTrie.only_whole_words();
 }
 
 /**
@@ -898,15 +952,15 @@ void xppParser::removeWhitespace() {
 		/* Search around the equal signs */
 		pos1 = lines[i].first.find("=");
 		if (pos1 != std::string::npos) {
-			/* Search for whitspace before equal sign */
-			pos2 = lines[i].first.find_last_not_of(" \t\f\v\r", pos1-1);
-			if (pos2 != pos1-1) {
-				lines[i].first.erase(pos2+1, pos1-pos2-1);
-			}
 			/* Search for whitspace after equal sign */
 			pos2 = lines[i].first.find_first_not_of(" \t\f\v\r", pos1+1);
 			if (pos2 != pos1+1) {
 				lines[i].first.erase(pos1+1, pos2-pos1-1);
+			}
+			/* Search for whitspace before equal sign */
+			pos2 = lines[i].first.find_last_not_of(" \t\f\v\r", pos1-1);
+			if (pos2 != pos1-1) {
+				lines[i].first.erase(pos2+1, pos1-pos2-1);
 			}
 		}
 
@@ -931,9 +985,9 @@ void xppParser::summarizeOde() {
 		std::cout << "Added number " << Numbers[i].Name
 				  << "=" << Numbers[i].Expr << std::endl;
 	}
-	for (unsigned i=0; i < Internal.size(); i++) {
-		std::cout << "Added temporary " << Internal[i].Name
-				  << "=" << Internal[i].Expr << std::endl;
+	for (unsigned i=0; i < Temporaries.size(); i++) {
+		std::cout << "Added temporary " << Temporaries[i].Name
+				  << "=" << Temporaries[i].Expr << std::endl;
 	}
 	for (unsigned i=0; i < Parameters.size(); i++) {
 		std::cout << "Added parameter " << Parameters[i].Name

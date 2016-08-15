@@ -1,5 +1,8 @@
 #Test ode file for xppParser
 param g_1=0.0, g_2=0.025
+
+Subpar(t) = 1*2*3
+EXPRESSION = sin(x)*2
   
 !tau=20
 

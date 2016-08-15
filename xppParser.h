@@ -69,7 +69,7 @@ private:
 	optsArray Functions;
 	optsArray Globals;
 	optsArray InitConds;
-	optsArray Internal;
+	optsArray Temporaries;
 	optsArray Markovs;
 	optsArray Numbers;
 	optsArray Options;
