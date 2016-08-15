@@ -312,14 +312,15 @@ void xppParser::extractDefinition(void) {
 			/* Sanity check whether an temporary expression was found or the
 			 * parsed name contained a keyword. This is only relevant if there
 			 * was no separate keyword. To simplify the handling below, we set
-			 * get_index() of an temporary expression to size(keywords).
+			 * get_index() of an temporary expression to keywords.size().
 			 */
 			if(lines[i].first.at(pos2) == '=') {
 				if (result.size() > 1) {
 					/* If multiple keywords were found, the name of the
 					 * expression contains a keyword. This is only possible if
-					 * it is either an expression or a keyword that is merged
-					 * with the name. Consequently remove all other findings.
+					 * it is either an temporary expression or a keyword that is
+					 * merged with the name. Consequently remove all other
+					 * findings.
 					 */
 					while (true) {
 						if (result.at(0).get_index() != 0 ||

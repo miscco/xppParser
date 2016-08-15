@@ -36,13 +36,11 @@ xppEvaluator::xppEvaluator(xppParser &p)
  */
 aho_corasick::trie xppEvaluator::createTrie(const optsArray *expr) {
 	aho_corasick::trie trie;
-
-	trie.only_whole_words();
-	trie.remove_overlaps();
-
 	for (unsigned i=0; i < expr->size(); i++) {
 		trie.insert(expr->at(i).Name);
 	}
+	trie.only_whole_words();
+	trie.remove_overlaps();
 
 	return trie;
 }
@@ -57,7 +55,6 @@ aho_corasick::trie xppEvaluator::createTrie(const optsArray *expr) {
 void xppEvaluator::parseArrays(std::vector<optsArray*> arrays,
 							   unsigned start) {
 	aho_corasick::trie trie = createTrie(arrays.at(start));
-
 	for (unsigned i = start+1; i < arrays.size(); i++) {
 		parseExpressions(trie, arrays.at(i));
 	}
