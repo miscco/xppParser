@@ -396,8 +396,6 @@ void xppParser::extractDefinition(void) {
 				break;
 			case 1:
 			case 2:
-				Equations.push_back(opt);
-				break;
 			case 3:
 				Equations.push_back(opt);
 				break;
