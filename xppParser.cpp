@@ -511,12 +511,11 @@ void xppParser::extractGlobal(void) {
 		if (pos1 != std::string::npos) {
 			opts opt;
 
-			/* Parse the sign flag For simplicity store it in the name slot */
+			/* Parse the sign flag. For simplicity store it in the name slot */
 			opt.Name = getNextWord(lines[i], pos1, pos2);
 			checkName(opt.Name, lines[i], pos1);
 
-			/* Parse flip condition. For safety parse until the curly brace of
-			 * the reset slot
+			/* Parse flip condition.
 			 */
 			pos1 = lines[i].first.find_first_not_of(" ", pos2);
 			pos2 = lines[i].first.find("{", pos1);
