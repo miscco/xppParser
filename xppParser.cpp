@@ -825,7 +825,7 @@ stringList xppParser::getList(const std::string& line,
 }
 
 /**
- * @brief Gets the next expression between pos2 and a commata
+ * @brief Gets the next expression between pos2 and a commata outside braces
  *
  * @par line: String we are searching in
  * @par	pos1: Old position. Will be updated to the position after the commata
@@ -914,9 +914,8 @@ void xppParser::readFile(void) {
 			temp.erase(0, pos1);
 			temp.resize(temp.find_last_not_of(" \t\f\v\r\n")+1);
 			auto last = std::unique(temp.begin(), temp.end(),
-									[](char l, char r){
-				return std::isspace(l) &&
-						std::isspace(r);});
+									[](char l, char r){return std::isspace(l) &&
+															  std::isspace(r);});
 			temp.erase(last, temp.end());
 			lines.push_back(std::make_pair(temp, lineCount));
 		}
