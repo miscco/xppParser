@@ -46,6 +46,7 @@ private:
 							 std::string closure, std::string delim);
 	std::string getNextExpr (const lineNumber &line, size_t &pos1,size_t &pos2);
 	std::string getNextWord (const lineNumber &line, size_t &pos1,size_t &pos2);
+	bool isNumeric			(const std::string &str);
 
 	/* Filename of the ode file */
 	const std::string		fileName;

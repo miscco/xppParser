@@ -115,19 +115,6 @@ std::string xppEvaluator::getNextOperand(const std::string &expr,
 }
 
 /**
- * @brief Checks whether a provided string is a numeric expression
- *
- * @par str: The std::string containing the expression
- *
- * @return true if the string is a numeric expression, false otherwise
- */
-bool xppEvaluator::isNumeric(const std::string &str) {
-	char* p;
-	std::strtod(str.c_str(), &p);
-	return (*p == 0.0);
-}
-
-/**
  * @brief Utilize a trie search to replace constant expressions in an opts array
  *
  * @par arrays: An array of optsArrays containing the parsed expressions.

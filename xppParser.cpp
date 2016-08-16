@@ -321,12 +321,12 @@ void xppParser::extractDefinition(void) {
 					 */
 					while (true) {
 						if (result.at(0).get_index() != 0 ||
-							result.at(0).get_index() != 1 ||
-							result.at(0).get_index() != 2 ||
-							result.at(0).get_index() != 3 ||
-							result.at(0).get_index() != 4 ||
-							result.at(0).get_index() != 9 ||
-							result.at(0).get_index() != 11) {
+								result.at(0).get_index() != 1 ||
+								result.at(0).get_index() != 2 ||
+								result.at(0).get_index() != 3 ||
+								result.at(0).get_index() != 4 ||
+								result.at(0).get_index() != 9 ||
+								result.at(0).get_index() != 11) {
 							result.erase(result.begin());
 							break;
 						}
@@ -334,7 +334,8 @@ void xppParser::extractDefinition(void) {
 				}
 
 				/* If there were no valid keywords found this must be a
-				 * temporary.
+				 * temporary. So create a fake result with and index equal to
+				 * the size of xppKeywords.
 				 */
 				if(result.size() == 0) {
 					result.push_back(
@@ -388,12 +389,15 @@ void xppParser::extractDefinition(void) {
 			opt.Expr = getNextExpr(lines[i], pos1, pos2);
 
 			/* Check if all function arguments are used */
-			if (result.at(0).get_index() == 9) {
+			if (result.at(0).get_index() == 8) {
+				if (!isNumeric(opt.Expr)) {
+					throw xppParserException(EXPECTED_NUMBER, lines[i], pos1);
+				}
+			} else if (result.at(0).get_index() == 9) {
 				size_t pos3 = opt.Name.length()+1;
 				for (std::string &str : opt.Args) {
 					if (opt.Expr.find(str) == std::string::npos) {
-						throw xppParserException(MISSING_ARGUMENT,
-												 lines[i], pos3);
+						throw xppParserException(MISSING_ARGUMENT, lines[i], pos3);
 					}
 					pos3 += str.length()+1;
 				}
@@ -870,6 +874,19 @@ void xppParser::initializeTree (void) {
 		keywordTrie.insert(key);
 	}
 	keywordTrie.remove_overlaps();
+}
+
+/**
+ * @brief Checks whether a provided string is a numeric expression
+ *
+ * @par str: The std::string containing the expression
+ *
+ * @return true if the string is a numeric expression, false otherwise
+ */
+bool xppParser::isNumeric(const std::string &str) {
+	char* p;
+	std::strtod(str.c_str(), &p);
+	return (*p == 0.0);
 }
 
 /**
