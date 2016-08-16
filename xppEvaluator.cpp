@@ -46,7 +46,8 @@ aho_corasick::trie xppEvaluator::createTrie(const optsArray &array) {
  */
 functionTable xppEvaluator::createFunctionTable(const optsArray &array) {
 	functionTable table;
-	for (const opts &opt : array) {	aho_corasick::trie trie;
+	for (const opts &opt : array) {
+		aho_corasick::trie trie;
 		for (const std::string &str : opt.Args) {
 			trie.insert(str);
 		}
@@ -71,13 +72,16 @@ functionTable xppEvaluator::createFunctionTable(const optsArray &array) {
  *
  * @return A vector of the respective argument strings
  */
-stringList xppEvaluator::getFunctionArgs(const opts &opt,
-													   size_t &start) {
-	stringList args;
+stringList xppEvaluator::getFunctionArgs (const opts &opt,
+										  size_t &start) {
 	size_t end = opt.Expr.find(")", start);
 	size_t pos1 = start;
 	size_t pos2 = opt.Expr.find_first_of(",)", pos1);
-	args.push_back(opt.Expr.substr(pos1, pos2-pos1));
+	stringList args = {opt.Expr.substr(pos1, pos2-pos1)};
+	if (parser.usedNames.find(args.back()) == parser.usedNames.end()) {
+		throw xppParserException(UNKNOWN_NAME,
+								 std::make_pair(opt.Expr, opt.Line), pos1);
+	}
 	while (pos2 < end) {
 		pos1 = pos2+1;
 		pos2 = opt.Expr.find_first_of(",)", pos1);
@@ -99,7 +103,7 @@ stringList xppEvaluator::getFunctionArgs(const opts &opt,
  * @par pos2: Old position at which the search startes
  *
  * @return pos1: First position of the operand
- * @return pos2: Position of the first mathematical operator after the word
+ * @return pos2: Position of the mathematical operator after the operand
  * @return string: String between [pos1, pos2-1]
  */
 std::string xppEvaluator::getNextOperand(const std::string &expr,
@@ -129,9 +133,9 @@ bool xppEvaluator::isNumeric(const std::string &str) {
  * @par arrays: An array of optsArrays containing the parsed expressions.
  */
 void xppEvaluator::replaceConstants(std::vector<optsArray> &arrays) {
-	for (unsigned i=0; i < 2; i++) {
+	for (size_t i=0; i < 2; i++) {
 		aho_corasick::trie trie = createTrie(arrays.at(i));
-		for (optsArray::size_type j= i+1; j < arrays.size(); j++) {
+		for (size_t j= i+1; j < arrays.size(); j++) {
 			for (opts &opt : arrays.at(j)) {
 				auto result = trie.parse_text(opt.Expr);
 				/* Reverse the order of the matches so the indices do not change
@@ -156,7 +160,7 @@ void xppEvaluator::replaceFunctions(std::vector<optsArray> &arrays) {
 	aho_corasick::trie trie = createTrie(parser.Functions);
 	functionTable funTable  = createFunctionTable(parser.Functions);
 
-	for (optsArray::size_type j= 7; j < arrays.size(); j++) {
+	for (optsArray::size_type j= 4; j < arrays.size(); j++) {
 		for (opts &opt : arrays.at(j)) {
 			auto result = trie.parse_text(opt.Expr);
 			/* Reverse the order of the matches so the indices do not change
