@@ -861,7 +861,7 @@ std::string xppParser::getNextWord(const lineNumber &line,
  * @brief Initializes the keyword tree from the keyword list
  */
 void xppParser::initializeTree (void) {
-	for (std::string key : xppKeywords) {
+	for (const std::string &key : xppKeywords) {
 		keywordTrie.insert(key);
 	}
 	keywordTrie.remove_overlaps();
