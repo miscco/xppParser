@@ -107,31 +107,28 @@ void xppParser::checkBrackets() {
 				break;
 			case ')':
 				if (brackets.empty()) {
-					throw xppParserException(MISSING_OPENING_BRACKET,
-											 line, j);
+					throw xppParserException(MISSING_OPENING_BRACKET, line, j);
 				} else if (brackets.top().first != ')') {
-					throw xppParserException(MISSING_CLOSING_BRACKET,
-											 line, brackets.top().second);
+					throw xppParserException(MISSING_CLOSING_BRACKET, line,
+											 brackets.top().second);
 				}
 				brackets.pop();
 				break;
 			case '}':
 				if (brackets.empty()) {
-					throw xppParserException(MISSING_OPENING_BRACKET,
-											 line, j);
+					throw xppParserException(MISSING_OPENING_BRACKET, line, j);
 				} else if (brackets.top().first != '}') {
-					throw xppParserException(MISSING_CLOSING_BRACKET,
-											 line, brackets.top().second);
+					throw xppParserException(MISSING_CLOSING_BRACKET, line,
+											 brackets.top().second);
 				}
 				brackets.pop();
 				break;
 			case ']':
 				if (brackets.empty()) {
-					throw xppParserException(MISSING_OPENING_BRACKET,
-											 line, j);
+					throw xppParserException(MISSING_OPENING_BRACKET, line, j);
 				} else if (brackets.top().first != ']') {
-					throw xppParserException(MISSING_CLOSING_BRACKET,
-											 line, brackets.top().second);
+					throw xppParserException(MISSING_CLOSING_BRACKET, line,
+											 brackets.top().second);
 				}
 				brackets.pop();
 				break;
@@ -140,8 +137,8 @@ void xppParser::checkBrackets() {
 			}
 		}
 		if (!brackets.empty()) {
-			throw xppParserException(MISSING_CLOSING_BRACKET,
-									 line, brackets.top().second);
+			throw xppParserException(MISSING_CLOSING_BRACKET, line,
+									 brackets.top().second);
 		}
 	}
 }
