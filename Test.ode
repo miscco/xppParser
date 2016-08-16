@@ -11,7 +11,7 @@ EXPRESSION = sin(x)*2
 
 global 1 x-1 {x=0;y=y+a*sin(y)}
 
-Function(Arg1, Arg2, Arg3)= 1*2
+Function(Arg1, Arg2, Arg3)= Arg1      *Arg2+    Arg3
 
 markov z 2
 {0} {alpha(v)}

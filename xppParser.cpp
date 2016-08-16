@@ -389,6 +389,18 @@ void xppParser::extractDefinition(void) {
 			/* Get the expression */
 			opt.Expr = getNextExpr(lines[i], pos1, pos2);
 
+			/* Check if all function arguments are used */
+			if (result.at(0).get_index() == 9) {
+				size_t pos3 = opt.Name.length()+1;
+				for (std::string &str : opt.Args) {
+					if (opt.Expr.find(str) == std::string::npos) {
+						throw xppParserException(MISSING_ARGUMENT,
+												 lines[i], pos3);
+					}
+					pos3 += str.length()+1;
+				}
+			}
+
 			/* Find the type of the keyword */
 			switch(result.at(0).get_index()) {
 			case 0:
@@ -829,11 +841,10 @@ std::string xppParser::getNextExpr(const lineNumber &line,
 								   size_t &pos2) {
 	findNextAssignment(line, pos1, pos2);
 	std::string expr = line.first.substr(pos1+1, pos2-pos1-2);
-
 	/* Remove whitespaces */
 	size_t pos;
 	while ((pos = expr.find_first_of(" \t\f\v\r")) != std::string::npos) {
-		expr.erase(pos);
+		expr.erase(pos, 1);
 	}
 	return expr;
 }
