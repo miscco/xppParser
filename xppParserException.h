@@ -20,6 +20,7 @@ enum xppParserError {
 	RESERVED_KEYWORD,
 	UNKNOWN_ASSIGNMENT,
 	UNKNOWN_NAME,
+	UNKNOWN_VARIABLE,
 	WRONG_ARRAY_ASSIGNMENT,
 	WRONG_MARKOV_ASSIGNMENT,
 	WRONG_TABLE_ASSIGNMENT
@@ -66,6 +67,9 @@ public:
 			m_msg = std::string("Unknown assignment");
 			break;
 		case UNKNOWN_NAME:
+			m_msg = std::string("Unknown name in expression");
+			break;
+		case UNKNOWN_VARIABLE:
 			m_msg = std::string("Unknown variable for initial condition");
 			break;
 		case WRONG_ARRAY_ASSIGNMENT:

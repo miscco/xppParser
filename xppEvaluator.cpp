@@ -26,10 +26,12 @@ xppEvaluator::xppEvaluator(xppParser &p)
 	 */
 	for (unsigned i=0; i < 2; i++) {
 		aho_corasick::trie trie = createTrie(arrays.at(i));
-		for (unsigned j = i+1; j < arrays.size(); j++) {
+		for (optsArray::size_type j= i+1; j < arrays.size(); j++) {
 			replaceExpressions(trie, arrays.at(i), arrays.at(j));
 		}
 	}
+
+	validateExpression(parser.Equations);
 }
 
 /**
@@ -62,6 +64,7 @@ aho_corasick::trie xppEvaluator::createTrie(const optsArray &array) {
 std::string xppEvaluator::getNextOperand(const std::string &expr,
 										 size_t &pos1,
 										 size_t &pos2) {
+
 	pos1 = expr.find_first_not_of("+-*/^", pos2);
 	pos2 = expr.find_first_of("+-*/^", pos1);
 	return expr.substr(pos1, pos2-pos1);
@@ -92,8 +95,7 @@ void xppEvaluator::replaceExpressions(aho_corasick::trie &trie,
 	for (opts &opt : target) {
 		auto result = trie.parse_text(opt.Expr);
 		for (auto &res : result) {
-			opt.Expr.replace(res.get_start(),
-							 res.size(),
+			opt.Expr.replace(res.get_start(), res.size(),
 							 source.at(res.get_index()).Expr);
 		}
 	}
@@ -102,7 +104,7 @@ void xppEvaluator::replaceExpressions(aho_corasick::trie &trie,
 void xppEvaluator::validateExpression(const optsArray &array) {
 	for (const opts &opt : array) {
 		/* Check the individual operands of the expression */
-		size_t pos1, pos2;
+		size_t pos1 = 0, pos2 = 0;
 		std::string temp = getNextOperand(opt.Expr, pos1, pos2);
 		while (pos2 != std::string::npos) {
 			if (parser.usedNames.find(temp) == parser.usedNames.end() &&
@@ -111,7 +113,7 @@ void xppEvaluator::validateExpression(const optsArray &array) {
 										 std::make_pair(opt.Expr, opt.Line),
 										 pos1);
 			}
-
+			temp = getNextOperand(opt.Expr, pos1, pos2);
 		}
 	}
 }

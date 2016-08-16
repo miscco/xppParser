@@ -382,7 +382,7 @@ void xppParser::extractDefinition(void) {
 				checkName(opt.Name, lines[i], pos1);
 			} else {
 				if (usedNames.find(opt.Name) == usedNames.end()) {
-					throw xppParserException(UNKNOWN_NAME, lines[i], pos1);
+					throw xppParserException(UNKNOWN_VARIABLE, lines[i], pos1);
 				}
 			}
 

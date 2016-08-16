@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+
+#include "xppEvaluator.h"
 #include "xppParser.h"
 
 int main(int argc, char** argv)
@@ -10,7 +12,9 @@ int main(int argc, char** argv)
 	} else {
 		filename = std::string(argv[1]);
 	}
-	xppParser ParseOde(filename);
+	xppParser parseOde(filename);
+
+	xppEvaluator evaluateOde(parseOde);
 
 	return 0;
 }
