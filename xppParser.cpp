@@ -307,7 +307,7 @@ void xppParser::extractDefinition(void) {
 
 		while (pos2 != std::string::npos) {
 			opts opt;
-			opt.Line = i;
+			opt.Line = lines[i].second;
 
 			/* Sanity check whether an temporary expression was found or the
 			 * parsed name contained a keyword. This is only relevant if there
@@ -480,7 +480,7 @@ void xppParser::extractExport(void) {
 		std::size_t pos2 = lines[i].first.find(" ", pos1);
 		if (pos1 != std::string::npos) {
 			opts opt;
-			opt.Line = i;
+			opt.Line = lines[i].second;
 			std::vector<std::string> temp;
 			temp = getList(getNextWord(lines[i], pos1, pos2),
 						   lines[i].second, "}", ",");
@@ -511,7 +511,7 @@ void xppParser::extractGlobal(void) {
 		std::size_t pos2 = lines[i].first.find(" ", pos1);
 		if (pos1 != std::string::npos) {
 			opts opt;
-			opt.Line = i;
+			opt.Line = lines[i].second;
 
 			/* Parse the sign flag. For simplicity store it in the name slot */
 			opt.Name = getNextWord(lines[i], pos1, pos2);
@@ -547,7 +547,7 @@ void xppParser::extractMarkov(void) {
 		std::size_t pos2 = lines[i].first.find(" ", pos1);
 		if (pos1 != std::string::npos) {
 			opts opt;
-			opt.Line = i;
+			opt.Line = lines[i].second;
 			int nstates;
 
 			/* Parse the name */
@@ -598,7 +598,7 @@ void xppParser::extractTable(void) {
 		std::size_t pos2 = lines[i].first.find(" ", pos1);
 		if (pos1 != std::string::npos) {
 			opts opt;
-			opt.Line = i;
+			opt.Line = lines[i].second;
 			unsigned npoints;
 			double xLow, xHigh;
 
