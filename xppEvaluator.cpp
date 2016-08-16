@@ -10,8 +10,8 @@ xppEvaluator::xppEvaluator(xppParser &p)
 		parser.Constants,
 		parser.Temporaries,
 		parser.Numbers,
-		/* opts arrays that will only be searched */
 		parser.Functions,
+		/* opts arrays that will only be searched */
 		parser.Algebraic,
 		parser.Auxiliar,
 		parser.Boundaries,

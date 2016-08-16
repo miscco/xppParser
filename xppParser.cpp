@@ -150,8 +150,9 @@ void xppParser::checkBrackets() {
  * @brief Checks whether a given name is already taken or reserved
  *
  * @par name: The name of the new definition
+ * @par line: The original line that was parsed from the ode file
+ * @par pos: The position of the name in line
  *
- * @return -1 on success or error values if the name is taken.
  */
 void xppParser::checkName(const std::string &name, const lineNumber &line, size_t pos) {
 	if (usedNames.find(name) != usedNames.end()) {
