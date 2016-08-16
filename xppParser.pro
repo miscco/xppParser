@@ -8,14 +8,12 @@ include(muparserx/muparserx.pri)
 
 SOURCES +=	main.cpp \
 			xppParser.cpp \
-    xppEvaluator.cpp \
-    xppValidator.cpp
+    xppEvaluator.cpp
 
 HEADERS +=	xppParser.h \
 			xppParserException.h \
     xppParserDefines.h \
-    xppEvaluator.h \
-    xppValidator.h
+    xppEvaluator.h
 
 PRECOMPILED_HEADER += aho_corasick/aho_corasick.hpp
 
