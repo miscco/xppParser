@@ -12,6 +12,7 @@ enum xppParserError {
 	DUPLICATED_NAME,
 	MISSING_ARGUMENT,
 	MISSING_CLOSING_BRACKET,
+	MISSING_MARKOV_ASSIGNMENT,
 	MISSING_OPENING_BRACKET,
 	EXPECTED_LIST_ARGUMENT,
 	EXPECTED_NUMBER,
@@ -45,6 +46,9 @@ public:
 			break;
 		case MISSING_CLOSING_BRACKET:
 			m_msg = std::string("Cannot find closing bracket");
+			break;
+		case MISSING_MARKOV_ASSIGNMENT:
+			m_msg = std::string("Missing assignment of markov transition probability");
 			break;
 		case MISSING_OPENING_BRACKET:
 			m_msg = std::string("Cannot find opening bracket");
@@ -80,7 +84,7 @@ public:
 			m_msg = std::string("Wrong array assignment");
 			break;
 		case WRONG_MARKOV_ASSIGNMENT:
-			m_msg = std::string("Wrong assignment of markov process");
+			m_msg = std::string("Superflous assignment of markov transition probability");
 			break;
 		case WRONG_TABLE_ASSIGNMENT:
 			m_msg = std::string("Wrong assignment of table expression");

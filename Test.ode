@@ -14,8 +14,8 @@ global 1 x-1 {x=0;y=y+a*sin(y)}
 Function(Arg1, Arg2, Arg3)= Arg1      *Arg2+    Arg3
 
 markov z 2
-{0} {alpha(v)}
-{beta(v)} {0}
+{g_1} {alpha(v)}
+{beta(v)} {g_2}
 
 z[1..4]'=-z[j]+[j]
 

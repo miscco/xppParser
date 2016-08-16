@@ -580,10 +580,14 @@ void xppParser::extractMarkov(void) {
 					pos1 = lines[i+1].first.find("{", pos2);
 					pos2 = lines[i+1].first.find("}", pos1);
 					if (pos1 == std::string::npos) {
-						throw xppParserException(WRONG_MARKOV_ASSIGNMENT,
-												 lines[i+1], pos1);
+						throw xppParserException(MISSING_MARKOV_ASSIGNMENT,
+												 lines[i+1], pos2);
 					}
-					opt.Args.push_back(lines[i+j].first.substr(pos1+1, pos2-pos1-1));
+					opt.Args.push_back(lines[i+1].first.substr(pos1+1, pos2-pos1-1));
+				}
+				if (pos2 != lines[i+1].first.size()-1) {
+					throw xppParserException(WRONG_MARKOV_ASSIGNMENT,
+											 lines[i+1], lines[i+1].first.size());
 				}
 				lines.erase(lines.begin() + i + 1);
 			}
