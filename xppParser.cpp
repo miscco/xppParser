@@ -340,8 +340,9 @@ void xppParser::extractDefinition(void) {
 				 * temporary.
 				 */
 				if(result.size() == 0) {
-					result.push_back(aho_corasick::emit<char>(-1, -1, "",
-															  xppKeywords.size()));
+					result.push_back(
+								aho_corasick::emit<char>(-1, -1, "",
+														 xppKeywords.size()));
 				}
 			}
 
@@ -362,7 +363,7 @@ void xppParser::extractDefinition(void) {
 				size_t pos3 = lines[i].first.find("(", pos1);
 				opt.Name = lines[i].first.substr(pos1, pos3-pos1);
 				opt.Args = getList(lines[i].first.substr(pos3, pos2-pos3),
-								   lines[i].second, ")", ",");
+								   opt.Line, ")", ",");
 				break;
 			}
 			case 13: /* 0=Expression */
@@ -450,14 +451,13 @@ void xppParser::extractDefinition(void) {
 			case 15:
 				/* Extract the argument list */
 				pos1 = opt.Expr.find("(");
-				opt.Args = getList(opt.Expr.substr(pos1),
-								   lines[i].second, ")", ",");
+				opt.Args = getList(opt.Expr.substr(pos1), opt.Line, ")", ",");
 				opt.Expr.resize(pos1);
 				Special.push_back(opt);
 				break;
 			case 16:
 				/* Sets are a comma separated list */
-				opt.Args = getList(opt.Expr, lines[i].second, "}", ",");
+				opt.Args = getList(opt.Expr, opt.Line, "}", ",");
 				opt.Expr = "";
 				Sets.push_back(opt);
 				break;
@@ -493,14 +493,12 @@ void xppParser::extractExport(void) {
 		if (pos1 != std::string::npos) {
 			opts opt;
 			opt.Line = lines[i].second;
-			std::vector<std::string> temp;
-			temp = getList(getNextWord(lines[i], pos1, pos2),
-						   lines[i].second, "}", ",");
+			stringList temp;
+			temp = getList(getNextWord(lines[i], pos1, pos2), opt.Line, "}", ",");
 			opt.Args = temp;
 			opt.Expr = std::to_string(temp.size());
 
-			temp = getList(getNextWord(lines[i], pos1, pos2),
-						   lines[i].second, "}", ",");
+			temp = getList(getNextWord(lines[i], pos1, pos2), opt.Line, "}", ",");
 			opt.Args.insert(opt.Args.end(), temp.begin(), temp.end());
 
 			Exports.push_back(opt);
@@ -536,8 +534,7 @@ void xppParser::extractGlobal(void) {
 			opt.Expr = lines[i].first.substr(pos1, pos2-pos1-1);
 
 			/* The individual resets are separated by a semicolon */
-			opt.Args = getList(lines[i].first.substr(pos2),
-							   lines[i].second, "}", ";");
+			opt.Args = getList(lines[i].first.substr(pos2), opt.Line, "}", ";");
 			Globals.push_back(opt);
 			lines.erase(lines.begin() + i);
 		} else {
@@ -807,13 +804,13 @@ void xppParser::findNextAssignment(const lineNumber &line,
  *
  * @return Args: Vector of strings of the list elements
  */
-std::vector<std::string> xppParser::getList(const std::string& line,
-											int ln,
-											std::string closure,
-											std::string delim) {
+stringList xppParser::getList(const std::string& line,
+							  unsigned ln,
+							  std::string closure,
+							  std::string delim) {
 	size_t pos1 = 1;
 	size_t pos2 = line.find_first_of(delim+closure, pos1);
-	std::vector<std::string> temp;
+	stringList temp;
 	while (pos2 != std::string::npos) {
 		temp.push_back(line.substr(pos1, pos2-pos1));
 		if (temp.back().empty()) {

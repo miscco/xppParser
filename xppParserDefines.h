@@ -5,6 +5,8 @@
 #include <utility>
 #include <vector>
 
+#include "aho_corasick/aho_corasick.hpp"
+
 
 /* Basic structure that contains the textual information of an expression*/
 typedef struct {
@@ -16,6 +18,12 @@ typedef struct {
 
 /* Array of opts structures */
 typedef std::vector<opts> optsArray;
+
+/* Array of strings */
+typedef std::vector<std::string> stringList;
+
+/* Array of emit_collections for function tables */
+typedef std::vector<aho_corasick::trie::emit_collection> functionTable;
 
 /* Pair containing a parsed line and the original line number in the ode file.
  * This is mainly usefull for debugging if an error is thrown.

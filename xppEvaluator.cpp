@@ -21,17 +21,8 @@ xppEvaluator::xppEvaluator(xppParser &p)
 		parser.Volterra
 	};
 
-	/* Loop over the first 3 arrays and replace their expressions in the
-	 * following ones.
-	 */
-	for (unsigned i=0; i < 2; i++) {
-		aho_corasick::trie trie = createTrie(arrays.at(i));
-		for (optsArray::size_type j= i+1; j < arrays.size(); j++) {
-			replaceExpressions(trie, arrays.at(i), arrays.at(j));
-		}
-	}
-
-	validateExpression(parser.Equations);
+	replaceConstants(arrays);
+	replaceFunctions(arrays);
 }
 
 /**
@@ -51,22 +42,71 @@ aho_corasick::trie xppEvaluator::createTrie(const optsArray &array) {
 }
 
 /**
- * @brief Gets the next whitespace separated word after pos2
+ * @brief Create a emit_collection for all custom functions of the ode file
+ */
+functionTable xppEvaluator::createFunctionTable(const optsArray &array) {
+	functionTable table;
+	for (const opts &opt : array) {	aho_corasick::trie trie;
+		for (const std::string &str : opt.Args) {
+			trie.insert(str);
+		}
+		trie.only_whole_words();
+		trie.remove_overlaps();
+
+		auto result = trie.parse_text(opt.Expr);
+		/* Reverse the order of the matches so the indices do not change
+		 * when expression is replaced
+		 */
+		std::reverse(result.begin(), result.end());
+		table.push_back(result);
+	}
+	return table;
+}
+
+/**
+ * @brief Gets arguments of a function in a arbitrary expression
  *
- * @par line: String we are searching in
+ * @par opt: The opts structure containing the expression
+ * @par	start: The start of the brace-enclosed argument list
+ *
+ * @return A vector of the respective argument strings
+ */
+stringList xppEvaluator::getFunctionArgs(const opts &opt,
+													   size_t &start) {
+	stringList args;
+	size_t end = opt.Expr.find(")", start);
+	size_t pos1 = start;
+	size_t pos2 = opt.Expr.find_first_of(",)", pos1);
+	args.push_back(opt.Expr.substr(pos1, pos2-pos1));
+	while (pos2 < end) {
+		pos1 = pos2+1;
+		pos2 = opt.Expr.find_first_of(",)", pos1);
+		args.push_back(opt.Expr.substr(pos1, pos2-pos1));
+		if (parser.usedNames.find(args.back()) == parser.usedNames.end()) {
+			throw xppParserException(UNKNOWN_NAME,
+									 std::make_pair(opt.Expr, opt.Line), pos1);
+		}
+	}
+	start = end+2-start;
+	return args;
+}
+
+/**
+ * @brief Gets the next operand in a mathematical expression
+ *
+ * @par expr: The expression we are parsing
  * @par	pos1: Old position which will be udpated
  * @par pos2: Old position at which the search startes
  *
- * @return pos1: First position of the new word
- * @return pos2: Position of the first whitespace character after the word
+ * @return pos1: First position of the operand
+ * @return pos2: Position of the first mathematical operator after the word
  * @return string: String between [pos1, pos2-1]
  */
 std::string xppEvaluator::getNextOperand(const std::string &expr,
 										 size_t &pos1,
 										 size_t &pos2) {
-
-	pos1 = expr.find_first_not_of("+-*/^", pos2);
-	pos2 = expr.find_first_of("+-*/^", pos1);
+	pos1 = expr.find_first_not_of("+-*/^(", pos2);
+	pos2 = expr.find_first_of("+-*/^(", pos1);
 	return expr.substr(pos1, pos2-pos1);
 }
 
@@ -84,36 +124,55 @@ bool xppEvaluator::isNumeric(const std::string &str) {
 }
 
 /**
- * @brief Utilize a trie search to replace expressions in an opts array
+ * @brief Utilize a trie search to replace constant expressions in an opts array
  *
- * @par trie: A trie containing the expressions to be replaced
- * @par target: The opts array that will be searched for possible replacements
+ * @par arrays: An array of optsArrays containing the parsed expressions.
  */
-void xppEvaluator::replaceExpressions(aho_corasick::trie &trie,
-									  const optsArray &source,
-									  optsArray &target) {
-	for (opts &opt : target) {
-		auto result = trie.parse_text(opt.Expr);
-		for (auto &res : result) {
-			opt.Expr.replace(res.get_start(), res.size(),
-							 source.at(res.get_index()).Expr);
+void xppEvaluator::replaceConstants(std::vector<optsArray> &arrays) {
+	for (unsigned i=0; i < 2; i++) {
+		aho_corasick::trie trie = createTrie(arrays.at(i));
+		for (optsArray::size_type j= i+1; j < arrays.size(); j++) {
+			for (opts &opt : arrays.at(j)) {
+				auto result = trie.parse_text(opt.Expr);
+				/* Reverse the order of the matches so the indices do not change
+				 * when expression is replaced
+				 */
+				std::reverse(result.begin(), result.end());
+				for (auto &res : result) {
+					opt.Expr.replace(res.get_start(), res.size(),
+									 arrays.at(i).at(res.get_index()).Expr);
+				}
+			}
 		}
 	}
 }
 
-void xppEvaluator::validateExpression(const optsArray &array) {
-	for (const opts &opt : array) {
-		/* Check the individual operands of the expression */
-		size_t pos1 = 0, pos2 = 0;
-		std::string temp = getNextOperand(opt.Expr, pos1, pos2);
-		while (pos2 != std::string::npos) {
-			if (parser.usedNames.find(temp) == parser.usedNames.end() &&
-				!isNumeric(temp)) {
-				throw xppParserException(UNKNOWN_NAME,
-										 std::make_pair(opt.Expr, opt.Line),
-										 pos1);
+/**
+ * @brief Utilize a trie search to replace function expressions in an opts array
+ *
+ * @par arrays: An array of optsArrays containing the parsed expressions.
+ */
+void xppEvaluator::replaceFunctions(std::vector<optsArray> &arrays) {
+	aho_corasick::trie trie = createTrie(parser.Functions);
+	functionTable funTable  = createFunctionTable(parser.Functions);
+
+	for (optsArray::size_type j= 7; j < arrays.size(); j++) {
+		for (opts &opt : arrays.at(j)) {
+			auto result = trie.parse_text(opt.Expr);
+			/* Reverse the order of the matches so the indices do not change
+			 * when expression is replaced
+			 */
+			std::reverse(result.begin(), result.end());
+			for (auto &res : result) {
+				size_t pos = res.get_end()+2;
+				stringList args = getFunctionArgs(opt, pos);
+				std::string temp = parser.Functions.at(res.get_index()).Expr;
+				for (auto &res2 : funTable.at(res.get_index())) {
+					temp.replace(res2.get_start(), res2.size(),
+								 args.at(res2.get_index()));
+				}
+				opt.Expr.replace(res.get_start(), res.size()+pos, temp);
 			}
-			temp = getNextOperand(opt.Expr, pos1, pos2);
 		}
 	}
 }

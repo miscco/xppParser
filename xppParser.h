@@ -42,8 +42,8 @@ private:
 	void checkBrackets		(void);
 	void checkName			(const std::string &name, const lineNumber &line, size_t pos);
 	void findNextAssignment (const lineNumber &line, size_t &pos1, size_t &pos2);
-	std::vector<std::string> getList (const std::string &line, int ln,
-									  std::string closure, std::string delim);
+	stringList getList		(const std::string &line, unsigned ln,
+							 std::string closure, std::string delim);
 	std::string getNextExpr (const lineNumber &line, size_t &pos1,size_t &pos2);
 	std::string getNextWord (const lineNumber &line, size_t &pos1,size_t &pos2);
 
