@@ -259,7 +259,7 @@ void xppParser::expandArrayLines(std::vector<lineNumber>& lines,
 	mup::Value j((mup::int_type)idx);
 	mup::Value result;
 	parser.DefineVar("j",  mup::Variable(&j));
-	for (lineNumber expr : expressions) {
+	for (const lineNumber &expr : expressions) {
 		lineNumber temp = expr;
 		size_t pos1 = temp.first.find("[");
 		size_t pos2 = temp.first.find("]");
@@ -276,7 +276,6 @@ void xppParser::expandArrayLines(std::vector<lineNumber>& lines,
 			}
 			temp.first.replace(pos1, pos2-pos1+1, result.ToString());
 
-			/* Search for other expressions. */
 			pos1 = temp.first.find("[", pos2);
 			pos2 = temp.first.find("]", pos1);
 		}
