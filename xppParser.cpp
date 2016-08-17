@@ -144,20 +144,56 @@ void xppParser::checkBrackets() {
 }
 
 /**
+ * @brief Checks a keyword search in case of multiple matches
+ *
+ * @par result: The emit collection from the keyword search
+ * @par character: The character after the first word.
+ *
+ * This sanitizes the keyword search in case we have multiple matches. If
+ * multiple keywords were found, the name of the expression contains a keyword.
+ * This is only possible if it is either an temporary expression or a keyword
+ * that is merged with the name. Consequently remove all other findings. If
+ * there were no valid keywords left/found this must be a temporary expression.
+ * So create a fake result with and index equal to the size of xppKeywords.
+ */
+void xppParser::checkKeywordSearch(aho_corasick::trie::emit_collection &result,
+								   const char &character) {
+	if(character == '=') {
+		if (result.size() > 1) {
+			while (true) {
+				if (result.at(0).get_index() != 0 ||
+					result.at(0).get_index() != 1 ||
+					result.at(0).get_index() != 2 ||
+					result.at(0).get_index() != 3 ||
+					result.at(0).get_index() != 4 ||
+					result.at(0).get_index() != 9 ||
+					result.at(0).get_index() != 11) {
+					result.erase(result.begin());
+					break;
+				}
+			}
+		}
+		if(result.size() == 0) {
+			result.push_back(aho_corasick::emit<char>(-1, -1, "",
+													  xppKeywords.size()));
+		}
+	}
+}
+
+/**
  * @brief Checks whether a given name is already taken or reserved
  *
  * @par name: The name of the new definition
  * @par line: The original line that was parsed from the ode file
  * @par pos: The position of the name in line
- *
  */
 void xppParser::checkName(const std::string &name, const lineNumber &line, size_t pos) {
 	if (usedNames.find(name) != usedNames.end()) {
 		throw xppParserException(DUPLICATED_NAME, line, pos);
 	} else if (xppReservedNames.find(name) != xppReservedNames.end()) {
 		throw xppParserException(RESERVED_FUNCTION, line, pos);
-	} else if (std::find(xppKeywords.begin(), xppKeywords.end(), name) !=
-			   xppKeywords.end()) {
+	} else if (std::find(xppKeywords.begin(),
+						 xppKeywords.end(), name) != xppKeywords.end()) {
 		throw xppParserException(RESERVED_KEYWORD, line, pos);
 	}
 	usedNames.insert(name);
@@ -309,40 +345,9 @@ void xppParser::extractDefinition(void) {
 			/* Sanity check whether an temporary expression was found or the
 			 * parsed name contained a keyword. This is only relevant if there
 			 * was no separate keyword. To simplify the handling below, we set
-			 * get_index() of an temporary expression to keywords.size().
+			 * get_index() of a temporary expression to keywords.size().
 			 */
-			if(lines[i].first.at(pos2) == '=') {
-				if (result.size() > 1) {
-					/* If multiple keywords were found, the name of the
-					 * expression contains a keyword. This is only possible if
-					 * it is either an temporary expression or a keyword that is
-					 * merged with the name. Consequently remove all other
-					 * findings.
-					 */
-					while (true) {
-						if (result.at(0).get_index() != 0 ||
-								result.at(0).get_index() != 1 ||
-								result.at(0).get_index() != 2 ||
-								result.at(0).get_index() != 3 ||
-								result.at(0).get_index() != 4 ||
-								result.at(0).get_index() != 9 ||
-								result.at(0).get_index() != 11) {
-							result.erase(result.begin());
-							break;
-						}
-					}
-				}
-
-				/* If there were no valid keywords found this must be a
-				 * temporary. So create a fake result with and index equal to
-				 * the size of xppKeywords.
-				 */
-				if(result.size() == 0) {
-					result.push_back(
-								aho_corasick::emit<char>(-1, -1, "",
-														 xppKeywords.size()));
-				}
-			}
+			checkKeywordSearch(result, lines[i].first.at(pos2));
 
 			switch (result.at(0).get_index()) {
 			case 0: /* !Name */
@@ -393,7 +398,7 @@ void xppParser::extractDefinition(void) {
 				if (!isNumeric(opt.Expr)) {
 					throw xppParserException(EXPECTED_NUMBER, lines[i], pos1);
 				}
-			/* Check if all function arguments are used */
+				/* Check if all function arguments are used */
 			} else if (result.at(0).get_index() == 9) {
 				size_t pos3 = opt.Name.length()+1;
 				for (std::string &str : opt.Args) {
@@ -920,7 +925,7 @@ void xppParser::readFile(void) {
 			temp.resize(temp.find_last_not_of(" \t\f\v\r\n")+1);
 			auto last = std::unique(temp.begin(), temp.end(),
 									[](char l, char r){return std::isspace(l) &&
-															  std::isspace(r);});
+						std::isspace(r);});
 			temp.erase(last, temp.end());
 			lines.push_back(std::make_pair(temp, lineCount));
 		}

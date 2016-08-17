@@ -40,8 +40,10 @@ private:
 
 	/* Helper functions */
 	void checkBrackets		(void);
+	void checkKeywordSearch (aho_corasick::trie::emit_collection &result,
+							 const char &character);
 	void checkName			(const std::string &name, const lineNumber &line, size_t pos);
-	void findNextAssignment (const lineNumber &line, size_t &pos1, size_t &pos2);
+	void findNextAssignment (const lineNumber &line, size_t &pos1,size_t &pos2);
 	stringList getList		(const std::string &line, unsigned ln,
 							 std::string closure, std::string delim);
 	std::string getNextExpr (const lineNumber &line, size_t &pos1,size_t &pos2);
