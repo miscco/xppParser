@@ -375,7 +375,7 @@ void xppParser::extractDefinition(void) {
 			}
 
 			/* Check whether the name is already taken/reserved, except for
-			 * initial conditions, where we check fo existence.
+			 * initial conditions, where we check for existence.
 			 */
 			if (result.at(0).get_index() != 10) {
 				checkName(opt.Name, lines[i], pos1);
