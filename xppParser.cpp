@@ -388,11 +388,12 @@ void xppParser::extractDefinition(void) {
 			/* Get the expression */
 			opt.Expr = getNextExpr(lines[i], pos1, pos2);
 
-			/* Check if all function arguments are used */
+			/* Check numbers are indeed numeric expressions */
 			if (result.at(0).get_index() == 8) {
 				if (!isNumeric(opt.Expr)) {
 					throw xppParserException(EXPECTED_NUMBER, lines[i], pos1);
 				}
+			/* Check if all function arguments are used */
 			} else if (result.at(0).get_index() == 9) {
 				size_t pos3 = opt.Name.length()+1;
 				for (std::string &str : opt.Args) {

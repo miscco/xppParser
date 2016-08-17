@@ -22,13 +22,22 @@ private:
 	void replaceFunctions			(std::vector<optsArray> &arrays);
 
 	/* Helper functions */
-	aho_corasick::trie	createTrie			(const optsArray &array);
-	functionTable		createFunctionTable	(const optsArray &array);
-	bool				isNumeric			(const std::string &str);
-	stringList			getFunctionArgs		(const opts &opt, size_t &start);
-	std::string			getNextOperand		(const std::string &expr,
-											 size_t &pos1,
-											 size_t &pos2);
+	aho_corasick::trie	createTrie		(const optsArray &array);
+	functionTable	createFunctionTable	(const optsArray &array);
+	bool			isNumeric			(const std::string &str);
+	stringList		getFunctionArgs		(const std::string &str,
+										 const size_t &ln,
+										 size_t &start);
+	std::string		getNextOperand		(const std::string &expr,
+										 size_t &pos1,
+										 size_t &pos2);
+	void			replaceExpression	(aho_corasick::trie &trie,
+										 const optsArray &source,
+										 std::string &expr);
+	void			replaceFunExpression(aho_corasick::trie &trie,
+										 const functionTable &funTable,
+										 std::string &expr,
+										 const size_t &ln);
 };
 
 #endif // XPPEVALUATOR_H

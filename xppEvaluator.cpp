@@ -16,7 +16,6 @@ xppEvaluator::xppEvaluator(xppParser &p)
 		parser.Auxiliar,
 		parser.Boundaries,
 		parser.Equations,
-		parser.Markovs,
 		parser.Special,
 		parser.Volterra
 	};
@@ -43,6 +42,10 @@ aho_corasick::trie xppEvaluator::createTrie(const optsArray &array) {
 
 /**
  * @brief Create a emit_collection for all custom functions of the ode file
+ *
+ * For functions we have to know the position of all the function arguments in
+ * the function expression, as the arguments may change every time the function
+ * is invoked.
  */
 functionTable xppEvaluator::createFunctionTable(const optsArray &array) {
 	functionTable table;
@@ -72,23 +75,22 @@ functionTable xppEvaluator::createFunctionTable(const optsArray &array) {
  *
  * @return A vector of the respective argument strings
  */
-stringList xppEvaluator::getFunctionArgs (const opts &opt,
+stringList xppEvaluator::getFunctionArgs (const std::string &str,
+										  const size_t &ln,
 										  size_t &start) {
-	size_t end = opt.Expr.find(")", start);
+	size_t end = str.find(")", start);
 	size_t pos1 = start;
-	size_t pos2 = opt.Expr.find_first_of(",)", pos1);
-	stringList args = {opt.Expr.substr(pos1, pos2-pos1)};
+	size_t pos2 = str.find_first_of(",)", pos1);
+	stringList args = {str.substr(pos1, pos2-pos1)};
 	if (parser.usedNames.find(args.back()) == parser.usedNames.end()) {
-		throw xppParserException(UNKNOWN_NAME,
-								 std::make_pair(opt.Expr, opt.Line), pos1);
+		throw xppParserException(UNKNOWN_NAME, std::make_pair(str, ln), pos1);
 	}
 	while (pos2 < end) {
 		pos1 = pos2+1;
-		pos2 = opt.Expr.find_first_of(",)", pos1);
-		args.push_back(opt.Expr.substr(pos1, pos2-pos1));
+		pos2 = str.find_first_of(",)", pos1);
+		args.push_back(str.substr(pos1, pos2-pos1));
 		if (parser.usedNames.find(args.back()) == parser.usedNames.end()) {
-			throw xppParserException(UNKNOWN_NAME,
-									 std::make_pair(opt.Expr, opt.Line), pos1);
+			throw xppParserException(UNKNOWN_NAME, std::make_pair(str, ln), pos1);
 		}
 	}
 	start = end+2-start;
@@ -124,17 +126,68 @@ void xppEvaluator::replaceConstants(std::vector<optsArray> &arrays) {
 		aho_corasick::trie trie = createTrie(arrays.at(i));
 		for (size_t j= i+1; j < arrays.size(); j++) {
 			for (opts &opt : arrays.at(j)) {
-				auto result = trie.parse_text(opt.Expr);
-				/* Reverse the order of the matches so the indices do not change
-				 * when expression is replaced
-				 */
-				std::reverse(result.begin(), result.end());
-				for (auto &res : result) {
-					opt.Expr.replace(res.get_start(), res.size(),
-									 arrays.at(i).at(res.get_index()).Expr);
-				}
+				replaceExpression(trie, arrays.at(i), opt.Expr);
 			}
 		}
+
+		/* Handle markov processes separately as the transition probabilities
+		 * are stored in the args vector rather than the expression.
+		 */
+		for (opts &opt : parser.Markovs) {
+			for (std::string &str : opt.Args) {
+				replaceExpression(trie, arrays.at(i), str);
+			}
+		}
+	}
+}
+
+/**
+ * @brief Utilize a trie search to replace constant expressions in a string
+ *
+ * @par trie: The aho_corasick trie with the keywords.
+ * @par source: The array containing the replacements.
+ * @par str: The string that should be searched.
+ */
+void xppEvaluator::replaceExpression(aho_corasick::trie &trie,
+									 const optsArray &source,
+									 std::string &expr) {
+	auto result = trie.parse_text(expr);
+	/* Reverse the order of the matches so the indices do not change
+	 * when expression is replaced
+	 */
+	std::reverse(result.begin(), result.end());
+	for (auto &res : result) {
+		expr.replace(res.get_start(), res.size(),
+					 source.at(res.get_index()).Expr);
+	}
+}
+
+/**
+ * @brief Utilize a trie search to replace function expressions in a string
+ *
+ * @par trie: The aho_corasick trie with the keywords.
+ * @par funcTable: The emit collection of the functions array.
+ * @par str: The string that should be searched.
+ * @par ln: The line number for error throws.
+ */
+void xppEvaluator::replaceFunExpression(aho_corasick::trie &trie,
+										const functionTable &funTable,
+										std::string &expr,
+										const size_t &ln) {
+	auto result = trie.parse_text(expr);
+	/* Reverse the order of the matches so the indices do not change
+	 * when expression is replaced
+	 */
+	std::reverse(result.begin(), result.end());
+	for (auto &res : result) {
+		size_t pos = res.get_end()+2;
+		stringList args = getFunctionArgs(expr, ln, pos);
+		std::string temp = parser.Functions.at(res.get_index()).Expr;
+		for (auto &res2 : funTable.at(res.get_index())) {
+			temp.replace(res2.get_start(), res2.size(),
+						 args.at(res2.get_index()));
+		}
+		expr.replace(res.get_start(), res.size()+pos, temp);
 	}
 }
 
@@ -149,21 +202,16 @@ void xppEvaluator::replaceFunctions(std::vector<optsArray> &arrays) {
 
 	for (optsArray::size_type j= 4; j < arrays.size(); j++) {
 		for (opts &opt : arrays.at(j)) {
-			auto result = trie.parse_text(opt.Expr);
-			/* Reverse the order of the matches so the indices do not change
-			 * when expression is replaced
-			 */
-			std::reverse(result.begin(), result.end());
-			for (auto &res : result) {
-				size_t pos = res.get_end()+2;
-				stringList args = getFunctionArgs(opt, pos);
-				std::string temp = parser.Functions.at(res.get_index()).Expr;
-				for (auto &res2 : funTable.at(res.get_index())) {
-					temp.replace(res2.get_start(), res2.size(),
-								 args.at(res2.get_index()));
-				}
-				opt.Expr.replace(res.get_start(), res.size()+pos, temp);
-			}
+			replaceFunExpression(trie, funTable, opt.Expr, opt.Line);
+		}
+	}
+
+	/* Handle markov processes separately as the transition probabilities
+	 * are stored in the args vector rather than the expression.
+	 */
+	for (opts &opt : parser.Markovs) {
+		for (std::string &str : opt.Args) {
+			replaceFunExpression(trie, funTable, str, opt.Line);
 		}
 	}
 }
