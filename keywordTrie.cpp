@@ -26,17 +26,14 @@ void keywordTrie::addFailureLinks() {
 			q.push(child);
 		}
 		/* A failure link with just one less charater is the optimum and will
-		 * never change. The > part of the condition is for the root itself.
+		 * never change.
 		 */
-		if (temp->failure->depth >= temp->depth - 1) {
-			q.pop();
-			continue;
-		}
-
-		/* Parse the children of the parrents failure link */
-		for (node *failchild : temp->parent->failure->children) {
-			if (failchild->c == temp->c) {
-				temp->failure = failchild;
+		if (temp->failure->depth < temp->depth - 1) {
+			/* Parse the children of the parrents failure link */
+			for (node *failchild : temp->parent->failure->children) {
+				if (failchild->c == temp->c) {
+					temp->failure = failchild;
+				}
 			}
 		}
 		q.pop();
