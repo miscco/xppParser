@@ -105,12 +105,23 @@ std::vector<result> keywordTrie::parseText (std::string &text) {
 		return results;
 	}
 	node* current= root;
+	node *temp;
 	for (unsigned i=0; i < text.size(); i++) {
 		findChild(current, text.at(i), false);
 		if (current->id != -1) {
 			results.push_back(result(keywords.at(current->id),
 									 current->id,
 									 i - current->depth + 1));
+		}
+		temp = temp->failure;
+		/* Process the failure links for possible additional matches */
+		while (temp->depth > 0) {
+			if (temp->id != -1) {
+				results.push_back(result(keywords.at(temp->id),
+										 temp->id,
+										 i - temp->depth + 1));
+			}
+			temp = temp->failure;
 		}
 	}
 	return results;
