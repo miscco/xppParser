@@ -1,20 +1,32 @@
 #include "keywordTrie.h"
+
+namespace keywordTrie {
+
 /**
- * @brief keywordTrie::keywordTrie Initialize the trie structure with its root
- * node.
+ * @brief trie::trie Initialize the trie structure with its root node.
  */
-keywordTrie::keywordTrie()
-{
+trie::trie() {
 	trieNodes.push_back(node());
 	root = &trieNodes.at(0);
 	root->failure = root;
 }
 
 /**
- * @brief keywordTrie::addFailureLinks Utilize a breadth first search to get the
+ * @brief trie::addChild Add a child node to the trie
+ * @param parrent The parrent node of the new one.
+ * @param character The character on the edge to the new node
+ */
+void trie::addChild (node *parent, char &character) {
+	trieNodes.push_back(node(parent->depth+1, character, parent, root));
+	parent->children.push_back(&trieNodes.back());
+	parent = &trieNodes.back();
+}
+
+/**
+ * @brief trie::addFailureLinks Utilize a breadth first search to generate the
  * failure links.
  */
-void keywordTrie::addFailureLinks() {
+void trie::addFailureLinks() {
 	std::queue<node*> q;
 	node *temp;
 
@@ -41,45 +53,47 @@ void keywordTrie::addFailureLinks() {
 }
 
 /**
- * @brief keywordTrie::addChild Add a child node to the trie
- * @param parrent The parrent node of the new one.
- * @param character The character on the edge to the new node
+ * @brief trie::addString Wrapper around addString(std::string) to add
+ * containers of strings
+ * @param keyList The container with the keys.
  */
-void keywordTrie::addChild (node *parent, char &character) {
-	trieNodes.push_back(node(parent->depth+1, character, parent, root));
-	parent->children.push_back(&trieNodes.back());
-	parent = &trieNodes.back();
-}
-
-/**
- * @brief keywordTrie::addString Insert a new keyword into the keyword trie.
- * @param key The new keyword to be inserted.
- */
-void keywordTrie::addString (std::string &key) {
-	if (key.empty()) {
-		return;
-	}
-	node *current = root;
-	for (char character : key) {
-		findChild(current, character, true);
-	}
-
-	/* Check if the keyword was already found */
-	if (current->id != -1) {
-		throw std::runtime_error("Attempted to add two identical strings to keyword tree.");
-	}
-	keywords.push_back(key);
-	current->id = keywords.size();
+template<template<class, class> class TContainer>
+void trie::addString(const TContainer<std::string, std::allocator<std::string*>> &keyList) {
+	for (const std::string &key : keyList)
+		addString(key, false);
 	addFailureLinks();
 }
 
 /**
- * @brief keywordTrie::findChild Searches for a child node with given character
+ * @brief trie::addString Insert a new keyword into the keyword trie.
+ * @param key The new keyword to be inserted.
+ */
+void trie::addString (const std::string &key, bool addFailure = true) {
+	if (key.empty()) {
+		return;
+	}
+	node *current = root;
+	for (char character : key)
+		findChild(current, character, true);
+
+	/* Check if the keyword was already found */
+	if (current->id != -1) {
+		throw std::runtime_error(
+					"Attempted to add two identical strings to keyword tree.");
+	}
+	keywords.push_back(key);
+	current->id = keywords.size();
+	if (addFailure)
+		addFailureLinks();
+}
+
+/**
+ * @brief trie::findChild Searches for a child node with given character
  * @param current The current node
  * @param character The character that we are searching
  * @param addWord Flag sign to decide whether a new node should be added
  */
-void keywordTrie::findChild (node *parent, char &character, bool addWord) {
+void trie::findChild (node *parent, char &character, bool addWord) {
 	/* Traverse the children of the node to check for existing character. */
 	for (node *child : parent->children) {
 		if (child->c == character) {
@@ -95,16 +109,16 @@ void keywordTrie::findChild (node *parent, char &character, bool addWord) {
 }
 
 /**
- * @brief keywordTrie::parseText Parses a text with the trie
+ * @brief trie::parseText Parses a text with the trie
  * @param text The text to be parsed
  * @return Returns a vector with all matches
  */
-std::vector<result> keywordTrie::parseText (std::string &text) {
+std::vector<result> trie::parseText (std::string &text) {
 	std::vector<result> results;
 	if (text.empty()) {
 		return results;
 	}
-	node* current= root;
+	node *current= root;
 	node *temp;
 	for (unsigned i=0; i < text.size(); i++) {
 		findChild(current, text.at(i), false);
@@ -126,3 +140,5 @@ std::vector<result> keywordTrie::parseText (std::string &text) {
 	}
 	return results;
 }
+
+} // namespace keywordTrie

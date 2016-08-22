@@ -2,9 +2,12 @@
 #define KEYWORDTRIE_H
 
 #include <queue>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+namespace keywordTrie {
 
 struct node {
   int id		= -1;			/* Keyword id */
@@ -28,12 +31,14 @@ struct result {
 		:keyword(key), keyID(id), position(pos) {}
 };
 
-class keywordTrie
+class trie
 {
 public:
-	keywordTrie();
+	trie();
 
-	void addString	(std::string &key);
+	template<template<class, class> class TContainer>
+	void addString(const TContainer<std::string, std::allocator<std::string*>> &keyList);
+	void addString(const std::string &key, bool addFailure /*= true*/);
 
 	std::vector<result> parseText(std::string &text);
 
@@ -47,4 +52,5 @@ private:
 	void addFailureLinks();
 };
 
+} // namespace keywordTrie
 #endif // KEYWORDTRIE_H
