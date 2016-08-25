@@ -13,8 +13,6 @@
 class xppEvaluator
 {
 public:
-	typedef std::vector<keywordTrie::result> resultCollection;
-	typedef std::vector<resultCollection>	 resultTable;
 
 	xppEvaluator(xppParser &p);
 
@@ -26,7 +24,7 @@ private:
 
 	/* Helper functions */
 	keywordTrie::trie	createTrie		(const optsArray &array);
-	resultTable		createResultTable	(const optsArray &array);
+	keywordTrie::resultTable createResultTable(const optsArray &array);
 	bool			isNumeric			(const std::string &str);
 	stringList		getFunctionArgs		(const std::string &str,
 										 const size_t &ln,
@@ -38,7 +36,7 @@ private:
 										 const optsArray &source,
 										 std::string &expr);
 	void			replaceFunExpression(keywordTrie::trie &trie,
-										 const resultTable &funTable,
+										 const keywordTrie::resultTable &funTable,
 										 std::string &expr,
 										 const size_t &ln);
 };

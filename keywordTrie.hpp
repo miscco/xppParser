@@ -67,14 +67,14 @@ struct result {
 		  end(endPos) {}
 };
 
+typedef std::vector<keywordTrie::result> resultCollection;
+typedef std::vector<resultCollection>	 resultTable;
+
 /**
  * @brief The trie class representing the keyword trie.
  */
 class trie
 {
-public:
-	typedef std::vector<result> resultCollection;
-
 private:
 	node				*root = nullptr;		/**< The root node */
 	std::vector<node*>	trieNodes;				/**< Container of the node pointers */

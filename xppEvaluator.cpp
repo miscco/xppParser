@@ -45,8 +45,8 @@ keywordTrie::trie xppEvaluator::createTrie(const optsArray &array) {
  * the function expression, as the arguments may change every time the function
  * is invoked.
  */
-xppEvaluator::resultTable xppEvaluator::createFunctionTable(const optsArray &array) {
-	resultTable table;
+keywordTrie::resultTable xppEvaluator::createResultTable(const optsArray &array) {
+	keywordTrie::resultTable table;
 	for (const opts &opt : array) {
 		keywordTrie::trie trie;
 		trie.addString(opt.Args);
@@ -163,7 +163,7 @@ void xppEvaluator::replaceExpression(keywordTrie::trie &trie,
  * @par ln: The line number for error throws.
  */
 void xppEvaluator::replaceFunExpression(keywordTrie::trie &trie,
-										const resultTable &funTable,
+										const keywordTrie::resultTable &funTable,
 										std::string &expr,
 										const size_t &ln) {
 	auto result = trie.parseText(expr);
@@ -190,11 +190,11 @@ void xppEvaluator::replaceFunExpression(keywordTrie::trie &trie,
  */
 void xppEvaluator::replaceFunctions(std::vector<optsArray> &arrays) {
 	keywordTrie::trie trie = createTrie(parser.Functions);
-	resultTable funTable  = createFunctionTable(parser.Functions);
+	keywordTrie::resultTable resTable = createResultTable(parser.Functions);
 
 	for (optsArray::size_type j= 4; j < arrays.size(); j++) {
 		for (opts &opt : arrays.at(j)) {
-			replaceFunExpression(trie, funTable, opt.Expr, opt.Line);
+			replaceFunExpression(trie, resTable, opt.Expr, opt.Line);
 		}
 	}
 
@@ -203,7 +203,7 @@ void xppEvaluator::replaceFunctions(std::vector<optsArray> &arrays) {
 	 */
 	for (opts &opt : parser.Markovs) {
 		for (std::string &str : opt.Args) {
-			replaceFunExpression(trie, funTable, str, opt.Line);
+			replaceFunExpression(trie, resTable, str, opt.Line);
 		}
 	}
 }
