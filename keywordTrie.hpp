@@ -40,13 +40,13 @@ struct node {
 	int id			= -1;			/**< Keyword index */
 	unsigned depth	= 0;			/**< Depth in the trie*/
 	char c			= '\0';			/**< Character labelling the incoming edge */
-	node *parent	= nullptr;		/**< Parent node */
+	const node *parent	= nullptr;		/**< Parent node */
 	node *failure	= nullptr;		/**< Failure link */
 	node *output	= nullptr;		/**< Output link */
 	std::vector<node*> children;	/**< Child nodes */
 
 	explicit node () {}
-	explicit node (int d, const char character, node *par, node *root)
+	explicit node (int d, const char character, const node *par, node *root)
 		: depth(d), c(character), parent(par), failure(root), output(root) {}
 };
 
@@ -168,7 +168,7 @@ public:
 	 * @param text The text to be parsed.
 	 * @return Returns a vector with all matches.
 	 */
-	resultCollection parseText (std::string text) {
+	resultCollection parseText (const std::string &text) {
 		resultCollection results;
 		if (text.empty()) {
 			return results;
@@ -237,7 +237,7 @@ private:
 	node* findChild (node *current, const char character, bool addWord) {
 		for (node *child : current->children) {
 			if (caseSensitive ? (child->c == character) :
-					(std::tolower(child->c) == std::tolower(character))) {
+				(std::tolower(child->c) == std::tolower(character))) {
 				return child;
 			}
 		}
@@ -255,7 +255,7 @@ private:
 	 * @param character The character that is beeing searched.
 	 * @return The pointer to the matching node after a failure link or root->
 	 */
-	node* traverseFail (node *current, const char character) {
+	node* traverseFail (const node *current, const char character) {
 		node *temp = current->failure;
 		while (temp != root) {
 			for (node *failchild : temp->children) {
