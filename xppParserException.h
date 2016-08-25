@@ -19,9 +19,11 @@ enum xppParserError {
 	EXPECTED_TABLE_ASSIGNMENT,
 	RESERVED_FUNCTION,
 	RESERVED_KEYWORD,
+	RESERVED_OPTION,
 	UNKNOWN_ASSIGNMENT,
 	UNKNOWN_FUNCTION,
 	UNKNOWN_NAME,
+	UNKNOWN_OPTION,
 	UNKNOWN_VARIABLE,
 	WRONG_ARRAY_ASSIGNMENT,
 	WRONG_MARKOV_ASSIGNMENT,
@@ -66,7 +68,10 @@ public:
 			m_msg = std::string("Given function name is reserved");
 			break;
 		case RESERVED_KEYWORD:
-			m_msg = std::string("Given name is reserved");
+			m_msg = std::string("Given name is a reserved keyword");
+			break;
+		case RESERVED_OPTION:
+			m_msg = std::string("Given name is a reserved option");
 			break;
 		case UNKNOWN_ASSIGNMENT:
 			m_msg = std::string("Unknown assignment");
@@ -76,6 +81,9 @@ public:
 			break;
 		case UNKNOWN_NAME:
 			m_msg = std::string("Unknown name in expression");
+			break;
+		case UNKNOWN_OPTION:
+			m_msg = std::string("Unknown option choosen");
 			break;
 		case UNKNOWN_VARIABLE:
 			m_msg = std::string("Unknown variable for initial condition");

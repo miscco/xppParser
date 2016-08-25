@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "aho_corasick/aho_corasick.hpp"
+#include "keywordTrie.hpp"
 
 #include "xppParser.h"
 #include "xppParserDefines.h"
@@ -13,6 +13,9 @@
 class xppEvaluator
 {
 public:
+	typedef std::vector<keywordTrie::result> resultCollection;
+	typedef std::vector<resultCollection>	 resultTable;
+
 	xppEvaluator(xppParser &p);
 
 private:
@@ -22,8 +25,8 @@ private:
 	void replaceFunctions			(std::vector<optsArray> &arrays);
 
 	/* Helper functions */
-	aho_corasick::trie	createTrie		(const optsArray &array);
-	functionTable	createFunctionTable	(const optsArray &array);
+	keywordTrie::trie	createTrie		(const optsArray &array);
+	resultTable		createResultTable	(const optsArray &array);
 	bool			isNumeric			(const std::string &str);
 	stringList		getFunctionArgs		(const std::string &str,
 										 const size_t &ln,
@@ -31,11 +34,11 @@ private:
 	std::string		getNextOperand		(const std::string &expr,
 										 size_t &pos1,
 										 size_t &pos2);
-	void			replaceExpression	(aho_corasick::trie &trie,
+	void			replaceExpression	(keywordTrie::trie &trie,
 										 const optsArray &source,
 										 std::string &expr);
-	void			replaceFunExpression(aho_corasick::trie &trie,
-										 const functionTable &funTable,
+	void			replaceFunExpression(keywordTrie::trie &trie,
+										 const resultTable &funTable,
 										 std::string &expr,
 										 const size_t &ln);
 };

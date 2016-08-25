@@ -8,16 +8,15 @@ include(muparserx/muparserx.pri)
 
 SOURCES +=	main.cpp \
 			xppParser.cpp \
-    xppEvaluator.cpp \
-    keywordTrie.cpp
+	xppEvaluator.cpp
 
-HEADERS +=	xppParser.h \
+HEADERS +=	keywordTrie.hpp \
+			xppParser.h \
 			xppParserException.h \
-    xppParserDefines.h \
-    xppEvaluator.h \
-    keywordTrie.h
+			xppParserDefines.h \
+			xppEvaluator.h
 
-PRECOMPILED_HEADER += aho_corasick/aho_corasick.hpp
+PRECOMPILED_HEADER +=
 
 QMAKE_CXXFLAGS += -std=c++11
 QMAKE_CXXFLAGS_RELEASE -= -O1

@@ -17,6 +17,9 @@ xppParser::xppParser(std::string fn)
 		/* Initially read in the ode file */
 		readFile();
 
+		/* Initialize the keyword tree for command parsing */
+		initializeTree();
+
 		/* Check for incorrect brackets */
 		checkBrackets();
 
@@ -44,9 +47,6 @@ xppParser::xppParser(std::string fn)
 		/* Extract globals */
 		extractGlobal();
 
-		/* Initialize the keyword tree for command parsing */
-		initializeTree();
-
 		/* Extract all other definitions */
 		extractDefinition();
 
@@ -66,7 +66,10 @@ xppParser::xppParser(std::string fn)
 	}
 }
 xppParser::xppParser(const xppParser &parser)
-	: usedNames(parser.usedNames),
+	: keywords(parser.keywords),
+	  options(parser.options),
+	  reservedNames(parser.reservedNames),
+	  usedNames(parser.usedNames),
 	  Algebraic(parser.Algebraic),
 	  Auxiliar(parser.Auxiliar),
 	  Boundaries(parser.Boundaries),
@@ -156,26 +159,25 @@ void xppParser::checkBrackets() {
  * there were no valid keywords left/found this must be a temporary expression.
  * So create a fake result with and index equal to the size of xppKeywords.
  */
-void xppParser::checkKeywordSearch(aho_corasick::trie::emit_collection &result,
+void xppParser::checkKeywordSearch(resultCollection &result,
 								   const char &character) {
 	if(character == '=') {
 		if (result.size() > 1) {
 			while (true) {
-				if (result.at(0).get_index() != 0 ||
-					result.at(0).get_index() != 1 ||
-					result.at(0).get_index() != 2 ||
-					result.at(0).get_index() != 3 ||
-					result.at(0).get_index() != 4 ||
-					result.at(0).get_index() != 9 ||
-					result.at(0).get_index() != 11) {
+				if (result.at(0).id != 0 ||
+						result.at(0).id != 1 ||
+						result.at(0).id != 2 ||
+						result.at(0).id != 3 ||
+						result.at(0).id != 4 ||
+						result.at(0).id != 9 ||
+						result.at(0).id != 11) {
 					result.erase(result.begin());
 					break;
 				}
 			}
 		}
 		if(result.size() == 0) {
-			result.push_back(aho_corasick::emit<char>(-1, -1, "",
-													  xppKeywords.size()));
+			result.push_back(keywordTrie::result("", xppKeywords.size()));
 		}
 	}
 }
@@ -188,15 +190,16 @@ void xppParser::checkKeywordSearch(aho_corasick::trie::emit_collection &result,
  * @par pos: The position of the name in line
  */
 void xppParser::checkName(const std::string &name, const lineNumber &line, size_t pos) {
-	if (usedNames.find(name) != usedNames.end()) {
+	if (!usedNames.parseText(name).empty()) {
 		throw xppParserException(DUPLICATED_NAME, line, pos);
-	} else if (xppReservedNames.find(name) != xppReservedNames.end()) {
+	} else if (!reservedNames.parseText(name).empty()) {
 		throw xppParserException(RESERVED_FUNCTION, line, pos);
-	} else if (std::find(xppKeywords.begin(),
-						 xppKeywords.end(), name) != xppKeywords.end()) {
+	} else if (!keywords.parseText(name).empty()) {
 		throw xppParserException(RESERVED_KEYWORD, line, pos);
+	} else if (!options.parseText(name).empty()) {
+		throw xppParserException(RESERVED_OPTION, line, pos);
 	}
-	usedNames.insert(name);
+	usedNames.addString(name);
 }
 
 /**
@@ -336,7 +339,8 @@ void xppParser::extractDefinition(void) {
 		if (pos2 == std::string::npos) {
 			throw xppParserException(UNKNOWN_ASSIGNMENT, lines[i], pos1+1);
 		}
-		auto result = keywordTrie.parse_text(lines[i].first.substr(pos1, pos2-pos1));
+
+		auto results = keywords.parseText(lines[i].first.substr(pos1, pos2-pos1));
 
 		while (pos2 != std::string::npos) {
 			opts opt;
@@ -347,9 +351,9 @@ void xppParser::extractDefinition(void) {
 			 * was no separate keyword. To simplify the handling below, we set
 			 * get_index() of a temporary expression to keywords.size().
 			 */
-			checkKeywordSearch(result, lines[i].first.at(pos2));
+			checkKeywordSearch(results, lines[i].first.at(pos2));
 
-			switch (result.at(0).get_index()) {
+			switch (results.at(0).id) {
 			case 0: /* !Name */
 				opt.Name = lines[i].first.substr(pos1+1, pos2-pos1-1);
 				break;
@@ -357,10 +361,10 @@ void xppParser::extractDefinition(void) {
 			case 2:  /* Name' */
 			case 4:  /* Name(t) */
 			case 11: /* Name(0) */
-				opt.Name = lines[i].first.substr(pos1, result.at(0).get_start());
+				opt.Name = lines[i].first.substr(pos1, results.at(0).start-1);
 				break;
 			case 3: /* dName/dt */
-				opt.Name = lines[i].first.substr(pos1+1, result.at(0).get_start()-1);
+				opt.Name = lines[i].first.substr(pos1+1, results.at(0).start-1);
 				break;
 			case 9: {/* Name(args...) */
 				size_t pos3 = lines[i].first.find("(", pos1);
@@ -369,6 +373,8 @@ void xppParser::extractDefinition(void) {
 								   opt.Line, ")", ",");
 				break;
 			}
+			case 12:
+				break;
 			case 13: /* 0=Expression */
 				opt.Name = "Initial Condition";
 				break;
@@ -382,11 +388,17 @@ void xppParser::extractDefinition(void) {
 			/* Check whether the name is already taken/reserved, except for
 			 * initial conditions, where we check for existence.
 			 */
-			if (result.at(0).get_index() != 10) {
+			if (results.at(0).id != 10 &&
+					results.at(0).id != 17) {
 				checkName(opt.Name, lines[i], pos1);
-			} else {
-				if (usedNames.find(opt.Name) == usedNames.end()) {
+			} else if (results.at(0).id == 10) {
+				if (usedNames.parseText(opt.Name).empty()) {
 					throw xppParserException(UNKNOWN_VARIABLE, lines[i], pos1);
+				}
+			} else if (results.at(0).id == 17) {
+				std::cout << opt.Name << std::endl;
+				if (options.parseText(opt.Name).empty()) {
+					throw xppParserException(UNKNOWN_OPTION, lines[i], pos1);
 				}
 			}
 
@@ -394,12 +406,12 @@ void xppParser::extractDefinition(void) {
 			opt.Expr = getNextExpr(lines[i], pos1, pos2);
 
 			/* Check numbers are indeed numeric expressions */
-			if (result.at(0).get_index() == 8) {
+			if (results.at(0).id == 8) {
 				if (!isNumeric(opt.Expr)) {
 					throw xppParserException(EXPECTED_NUMBER, lines[i], pos1);
 				}
 				/* Check if all function arguments are used */
-			} else if (result.at(0).get_index() == 9) {
+			} else if (results.at(0).id == 9) {
 				size_t pos3 = opt.Name.length()+1;
 				for (std::string &str : opt.Args) {
 					if (opt.Expr.find(str) == std::string::npos) {
@@ -410,7 +422,7 @@ void xppParser::extractDefinition(void) {
 			}
 
 			/* Find the type of the keyword */
-			switch(result.at(0).get_index()) {
+			switch(results.at(0).id) {
 			case 0:
 				Constants.push_back(opt);
 				break;
@@ -532,7 +544,6 @@ void xppParser::extractGlobal(void) {
 
 			/* Parse the sign flag. For simplicity store it in the name slot */
 			opt.Name = getNextWord(lines[i], pos1, pos2);
-			checkName(opt.Name, lines[i], pos1);
 
 			/* Parse flip condition.
 			 */
@@ -880,10 +891,13 @@ std::string xppParser::getNextWord(const lineNumber &line,
  * @brief Initializes the keyword tree from the keyword list
  */
 void xppParser::initializeTree (void) {
-	for (const std::string &key : xppKeywords) {
-		keywordTrie.insert(key);
-	}
-	keywordTrie.remove_overlaps();
+	keywords.setWholeWords(false);
+	keywords.addString(xppKeywords);
+
+	options.setCaseSensitivity(false);
+	options.addString(xppOptionNames);
+
+	reservedNames.addString(xppReservedNames);
 }
 
 /**
