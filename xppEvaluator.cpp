@@ -23,8 +23,7 @@ xppEvaluator::xppEvaluator(xppParser &p)
 	replaceConstants(arrays);
 	replaceFunctions(arrays);
 
-	for (opts &opt : parser.Equations)
-		std::cout << opt.Expr << std::endl;
+	parser.summarizeOde();
 }
 
 /**

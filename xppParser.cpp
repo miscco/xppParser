@@ -50,9 +50,6 @@ xppParser::xppParser(std::string fn)
 		/* Extract all other definitions */
 		extractDefinition();
 
-		/* Print out the parsed expressions */
-		summarizeOde();
-
 		/* Catch errors */
 	} catch (xppParserException& e) {
 		std::cerr << e.what();
