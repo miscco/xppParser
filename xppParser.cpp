@@ -159,25 +159,27 @@ void xppParser::checkBrackets() {
  * there were no valid keywords left/found this must be a temporary expression.
  * So create a fake result with and index equal to the size of xppKeywords.
  */
-void xppParser::checkKeywordSearch(resultCollection &result,
-								   const char &character) {
+void xppParser::sanitizeKeywordSearch(resultCollection &results,
+									  const char &character) {
 	if(character == '=') {
-		if (result.size() > 1) {
-			while (true) {
-				if (result.at(0).id != 0 ||
-						result.at(0).id != 1 ||
-						result.at(0).id != 2 ||
-						result.at(0).id != 3 ||
-						result.at(0).id != 4 ||
-						result.at(0).id != 9 ||
-						result.at(0).id != 11) {
-					result.erase(result.begin());
-					break;
-				}
+		auto it = results.begin();
+		for (auto &res : results) {
+			if (res.id == 0 ||
+				res.id == 1 ||
+				res.id == 2 ||
+				res.id == 3 ||
+				res.id == 4 ||
+				res.id == 9 ||
+				res.id == 11) {
+				it++;
+			} else {
+				results.erase(it);
 			}
+
 		}
-		if(result.size() == 0) {
-			result.push_back(keywordTrie::result("", xppKeywords.size()));
+		/* No valid keyword left, this must be an expression */
+		if (results.size() == 0) {
+			results.push_back(keywordTrie::result("", xppKeywords.size()));
 		}
 	}
 }
@@ -332,15 +334,15 @@ void xppParser::extractDefinition(void) {
 	unsigned i = 0;
 	while(i < lines.size()) {
 		/* Search for the first keyword. In most cases it should be the first
-		 * consequtive string that precedes a whitespace or equal sign.
+		 * consecutive string that precedes a whitespace or equal sign.
 		 */
-		std::size_t pos1 = 0;
-		std::size_t pos2 = lines[i].first.find_first_of(" =");
+		std::size_t pos1 = 0, pos2 = 0;
+		std::string key = getNextWord(lines[i], pos1, pos2);
 		if (pos2 == std::string::npos) {
 			throw xppParserException(UNKNOWN_ASSIGNMENT, lines[i], pos1+1);
 		}
 
-		auto results = keywords.parseText(lines[i].first.substr(pos1, pos2-pos1));
+		auto results = keywords.parseText(key);
 
 		while (pos2 != std::string::npos) {
 			opts opt;
@@ -348,10 +350,11 @@ void xppParser::extractDefinition(void) {
 
 			/* Sanity check whether an temporary expression was found or the
 			 * parsed name contained a keyword. This is only relevant if there
-			 * was no separate keyword. To simplify the handling below, we set
-			 * get_index() of a temporary expression to keywords.size().
+			 * was no separate keyword, e.g Name(t). To simplify the handling
+			 * below, we set get_index() of a temporary expression to
+			 * keywords.size().
 			 */
-			checkKeywordSearch(results, lines[i].first.at(pos2));
+			sanitizeKeywordSearch(results, lines[i].first.at(pos2));
 
 			switch (results.at(0).id) {
 			case 0: /* !Name */
@@ -380,10 +383,12 @@ void xppParser::extractDefinition(void) {
 				break;
 			case 19: /* Name=Expression */
 				opt.Name = lines[i].first.substr(pos1, pos2-pos1);
+				break;
 			default: /* keyword Name */
 				opt.Name = getNextWord(lines[i], pos1, pos2);
 				break;
 			}
+
 
 			/* Check whether the name is already taken/reserved, except for
 			 * initial conditions, where we check for existence.
@@ -396,7 +401,6 @@ void xppParser::extractDefinition(void) {
 					throw xppParserException(UNKNOWN_VARIABLE, lines[i], pos1);
 				}
 			} else if (results.at(0).id == 17) {
-				std::cout << opt.Name << std::endl;
 				if (options.parseText(opt.Name).empty()) {
 					throw xppParserException(UNKNOWN_OPTION, lines[i], pos1);
 				}
@@ -491,6 +495,7 @@ void xppParser::extractDefinition(void) {
 				break;
 			default:
 				throw xppParserException(UNKNOWN_ASSIGNMENT, lines[i], pos1+1);
+				break;
 			}
 		}
 		lines.erase(lines.begin() + i);
@@ -828,8 +833,8 @@ void xppParser::findNextAssignment(const lineNumber &line,
  */
 stringList xppParser::getList(const std::string& line,
 							  unsigned ln,
-							  std::string closure,
-							  std::string delim) {
+							  const std::string &closure,
+							  const std::string &delim) {
 	size_t pos1 = 1;
 	size_t pos2 = line.find_first_of(delim+closure, pos1);
 	stringList temp;
@@ -1029,7 +1034,7 @@ void xppParser::removeWhitespace() {
  */
 void xppParser::summarizeOde() {
 	for (opts &opt : Constants) {
-		std::cout << "Added contant " << opt.Name
+		std::cout << "Added constant " << opt.Name
 				  << "=" << opt.Expr << std::endl;
 	}
 	for (opts &opt : Numbers) {
@@ -1060,8 +1065,13 @@ void xppParser::summarizeOde() {
 				  << "=" << opt.Expr << std::endl;
 	}
 	for (opts &opt : Functions) {
-		std::cout << "Added function " << opt.Name
-				  << "=" << opt.Expr << std::endl;
+		std::cout << "Added function " << opt.Name << "(";
+		std::string temp;
+		for (std::string &arg : opt.Args) {
+			temp += arg + ",";
+		}
+		temp.pop_back();
+		std::cout << temp << ")=" << opt.Expr << std::endl;
 	}
 	for (opts &opt : Equations) {
 		std::cout << "Added ODE " << opt.Name

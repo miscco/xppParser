@@ -41,7 +41,7 @@ static const std::vector<std::string> xppKeywords = {
 	"aux",
 	"par",
 	"number",
-	"(",		/* Handled separately to discriminate odes and volterra */
+	"(",
 	//"table",  /* This is handeled separately */
 	//"wiener", /* Handled separately */
 	//"global",

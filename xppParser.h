@@ -41,11 +41,11 @@ private:
 
 	/* Helper functions */
 	void checkBrackets		(void);
-	void checkKeywordSearch (resultCollection &result, const char &character);
+	void sanitizeKeywordSearch (resultCollection &result, const char &character);
 	void checkName			(const std::string &name, const lineNumber &line, size_t pos);
 	void findNextAssignment (const lineNumber &line, size_t &pos1,size_t &pos2);
 	stringList getList		(const std::string &line, unsigned ln,
-							 std::string closure, std::string delim);
+							 const std::string &closure, const std::string &delim);
 	std::string getNextExpr (const lineNumber &line, size_t &pos1,size_t &pos2);
 	std::string getNextWord (const lineNumber &line, size_t &pos1,size_t &pos2);
 	bool isNumeric			(const std::string &str);
