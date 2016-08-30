@@ -19,12 +19,12 @@ public:
 private:
 	xppParser   parser;
 
-	void replaceConstants			(std::vector<optsArray> &arrays);
-	void replaceFunctions			(std::vector<optsArray> &arrays);
+	void replaceConstants			(std::vector<optsArray*> &arrays);
+	void replaceFunctions			(std::vector<optsArray*> &arrays);
 
 	/* Helper functions */
-	keywordTrie::trie	createTrie		(const optsArray &array);
-	keywordTrie::resultTable createResultTable(const optsArray &array);
+	keywordTrie::trie	createTrie		(const optsArray *array);
+	keywordTrie::resultTable createResultTable(const optsArray *array);
 	bool			isNumeric			(const std::string &str);
 	stringList		getFunctionArgs		(const std::string &str,
 										 const size_t &ln,
@@ -33,7 +33,7 @@ private:
 										 size_t &pos1,
 										 size_t &pos2);
 	void			replaceExpression	(keywordTrie::trie &trie,
-										 const optsArray &source,
+										 const optsArray *source,
 										 std::string &expr);
 	void			replaceFunExpression(keywordTrie::trie &trie,
 										 const keywordTrie::resultTable &funTable,

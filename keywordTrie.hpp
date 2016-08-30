@@ -80,7 +80,7 @@ private:
 	std::vector<node*>	trieNodes;				/**< Container of the node pointers */
 	resultCollection	keywords;				/**< Container of the result stubs */
 	bool				caseSensitive = true;	/**< Flag for case sensitivity */
-	bool				wholeWords    = true;	/**< Flag for result validity */
+	bool				wholeWords    = false;	/**< Flag for result validity */
 
 public:
 	/**

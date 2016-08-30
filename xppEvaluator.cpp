@@ -6,22 +6,25 @@ xppEvaluator::xppEvaluator(xppParser &p)
 	/* The arrays containing the expressions that are replaced are at the
 	 * beginning of the array. T
 	 */
-	std::vector<optsArray> arrays = {
-		parser.Constants,
-		parser.Temporaries,
-		parser.Numbers,
-		parser.Functions,
+	std::vector<optsArray*> arrays = {
+		&parser.Constants,
+		&parser.Temporaries,
+		&parser.Numbers,
+		&parser.Functions,
 		/* opts arrays that will only be searched */
-		parser.Algebraic,
-		parser.Auxiliar,
-		parser.Boundaries,
-		parser.Equations,
-		parser.Special,
-		parser.Volterra
+		&parser.Algebraic,
+		&parser.Auxiliar,
+		&parser.Boundaries,
+		&parser.Equations,
+		&parser.Special,
+		&parser.Volterra
 	};
 
 	replaceConstants(arrays);
 	replaceFunctions(arrays);
+
+	for (opts &opt : parser.Equations)
+		std::cout << opt.Expr << std::endl;
 }
 
 /**
@@ -29,9 +32,9 @@ xppEvaluator::xppEvaluator(xppParser &p)
  *
  * @par expr: The opts array containing the expressions.
  */
-keywordTrie::trie xppEvaluator::createTrie(const optsArray &array) {
+keywordTrie::trie xppEvaluator::createTrie(const optsArray *array) {
 	keywordTrie::trie trie;
-	for (const opts &opt : array) {
+	for (const opts &opt : *array) {
 		trie.addString(opt.Name);
 	}
 
@@ -45,9 +48,9 @@ keywordTrie::trie xppEvaluator::createTrie(const optsArray &array) {
  * the function expression, as the arguments may change every time the function
  * is invoked.
  */
-keywordTrie::resultTable xppEvaluator::createResultTable(const optsArray &array) {
+keywordTrie::resultTable xppEvaluator::createResultTable(const optsArray *array) {
 	keywordTrie::resultTable table;
-	for (const opts &opt : array) {
+	for (const opts &opt : *array) {
 		keywordTrie::trie trie;
 		trie.addString(opt.Args);
 		auto result = trie.parseText(opt.Expr);
@@ -114,11 +117,11 @@ std::string xppEvaluator::getNextOperand(const std::string &expr,
  *
  * @par arrays: An array of optsArrays containing the parsed expressions.
  */
-void xppEvaluator::replaceConstants(std::vector<optsArray> &arrays) {
+void xppEvaluator::replaceConstants(std::vector<optsArray*> &arrays) {
 	for (size_t i=0; i < 2; i++) {
 		keywordTrie::trie trie = createTrie(arrays.at(i));
 		for (size_t j= i+1; j < arrays.size(); j++) {
-			for (opts &opt : arrays.at(j)) {
+			for (opts &opt : *arrays.at(j)) {
 				replaceExpression(trie, arrays.at(i), opt.Expr);
 			}
 		}
@@ -142,7 +145,7 @@ void xppEvaluator::replaceConstants(std::vector<optsArray> &arrays) {
  * @par str: The string that should be searched.
  */
 void xppEvaluator::replaceExpression(keywordTrie::trie &trie,
-									 const optsArray &source,
+									 const optsArray *source,
 									 std::string &expr) {
 	auto result = trie.parseText(expr);
 	/* Reverse the order of the matches so the indices do not change
@@ -150,7 +153,32 @@ void xppEvaluator::replaceExpression(keywordTrie::trie &trie,
 	 */
 	std::reverse(result.begin(), result.end());
 	for (auto &res : result) {
-		expr.replace(res.start, res.keyword.size(), source.at(res.id).Expr);
+		expr.replace(res.start-1, res.keyword.size(), source->at(res.id).Expr);
+	}
+}
+
+/**
+ * @brief Utilize a trie search to replace function expressions in an opts array
+ *
+ * @par arrays: An array of optsArrays containing the parsed expressions.
+ */
+void xppEvaluator::replaceFunctions(std::vector<optsArray*> &arrays) {
+	keywordTrie::trie trie = createTrie(arrays.at(3));
+	keywordTrie::resultTable resTable = createResultTable(arrays.at(3));
+
+	for (optsArray::size_type j= 4; j < arrays.size(); j++) {
+		for (opts &opt : *arrays.at(j)) {
+			replaceFunExpression(trie, resTable, opt.Expr, opt.Line);
+		}
+	}
+
+	/* Handle markov processes separately as the transition probabilities
+	 * are stored in the args vector rather than the expression.
+	 */
+	for (opts &opt : parser.Markovs) {
+		for (std::string &str : opt.Args) {
+			replaceFunExpression(trie, resTable, str, opt.Line);
+		}
 	}
 }
 
@@ -176,34 +204,9 @@ void xppEvaluator::replaceFunExpression(keywordTrie::trie &trie,
 		stringList args = getFunctionArgs(expr, ln, pos);
 		std::string temp = parser.Functions.at(res.id).Expr;
 		for (auto &res2 : funTable.at(res.id)) {
-			temp.replace(res2.start, res2.keyword.size(),
+			temp.replace(res2.start-1, res2.keyword.size(),
 						 args.at(res2.id));
 		}
-		expr.replace(res.start, res.keyword.size()+pos, temp);
-	}
-}
-
-/**
- * @brief Utilize a trie search to replace function expressions in an opts array
- *
- * @par arrays: An array of optsArrays containing the parsed expressions.
- */
-void xppEvaluator::replaceFunctions(std::vector<optsArray> &arrays) {
-	keywordTrie::trie trie = createTrie(parser.Functions);
-	keywordTrie::resultTable resTable = createResultTable(parser.Functions);
-
-	for (optsArray::size_type j= 4; j < arrays.size(); j++) {
-		for (opts &opt : arrays.at(j)) {
-			replaceFunExpression(trie, resTable, opt.Expr, opt.Line);
-		}
-	}
-
-	/* Handle markov processes separately as the transition probabilities
-	 * are stored in the args vector rather than the expression.
-	 */
-	for (opts &opt : parser.Markovs) {
-		for (std::string &str : opt.Args) {
-			replaceFunExpression(trie, resTable, str, opt.Line);
-		}
+		expr.replace(res.start-1, res.keyword.size()+pos, temp);
 	}
 }

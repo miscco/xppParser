@@ -164,14 +164,15 @@ void xppParser::sanitizeKeywordSearch(resultCollection &results,
 	if(character == '=') {
 		auto it = results.begin();
 		for (auto &res : results) {
-			if (res.id == 0 ||
-				res.id == 1 ||
-				res.id == 2 ||
-				res.id == 3 ||
-				res.id == 4 ||
-				res.id == 9 ||
-				res.id == 11) {
+			if (res.id == 0 || /* !Name */
+				res.id == 2 || /* Name' */
+				res.id == 3 || /* dName/dt */
+				res.id == 9) { /* Name(Args) */
 				it++;
+			} else if (res.id == 1 || /* Name(t) */
+					   res.id == 4 || /* Name(t+1) */
+					   res.id == 11) {  /* Name(0) */
+				results.erase(--it);  /* Remove Name(Args) */
 			} else {
 				results.erase(it);
 			}
@@ -341,7 +342,6 @@ void xppParser::extractDefinition(void) {
 		if (pos2 == std::string::npos) {
 			throw xppParserException(UNKNOWN_ASSIGNMENT, lines[i], pos1+1);
 		}
-
 		auto results = keywords.parseText(key);
 
 		while (pos2 != std::string::npos) {
@@ -367,7 +367,7 @@ void xppParser::extractDefinition(void) {
 				opt.Name = lines[i].first.substr(pos1, results.at(0).start-1);
 				break;
 			case 3: /* dName/dt */
-				opt.Name = lines[i].first.substr(pos1+1, results.at(0).start-1);
+				opt.Name = lines[i].first.substr(pos1+1, results.at(0).start-2);
 				break;
 			case 9: {/* Name(args...) */
 				size_t pos3 = lines[i].first.find("(", pos1);
@@ -896,13 +896,16 @@ std::string xppParser::getNextWord(const lineNumber &line,
  * @brief Initializes the keyword tree from the keyword list
  */
 void xppParser::initializeTries (void) {
-	keywords.setWholeWords(false);
 	keywords.addString(xppKeywords);
 
 	options.setCaseSensitivity(false);
+	options.setWholeWords(true);
 	options.addString(xppOptionNames);
 
+	reservedNames.setWholeWords(true);
 	reservedNames.addString(xppReservedNames);
+
+	usedNames.setWholeWords(true);
 }
 
 /**
