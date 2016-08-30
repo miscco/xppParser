@@ -4,7 +4,7 @@ xppEvaluator::xppEvaluator(xppParser &p)
 	:parser(xppParser(p))
 {
 	/* The arrays containing the expressions that are replaced are at the
-	 * beginning of the array. T
+	 * beginning of the array.
 	 */
 	std::vector<optsArray*> arrays = {
 		&parser.Constants,
@@ -28,7 +28,7 @@ xppEvaluator::xppEvaluator(xppParser &p)
 }
 
 /**
- * @brief Create a keyword trie from an opts array
+ * @brief Create a keyword trie from an opts array.
  *
  * @par expr: The opts array containing the expressions.
  */
@@ -42,7 +42,7 @@ keywordTrie::trie xppEvaluator::createTrie(const optsArray *array) {
 }
 
 /**
- * @brief Create a emit_collection for all custom functions of the ode file
+ * @brief Create a emit_collection for all custom functions of the ode file.
  *
  * For functions we have to know the position of all the function arguments in
  * the function expression, as the arguments may change every time the function
@@ -64,12 +64,12 @@ keywordTrie::resultTable xppEvaluator::createResultTable(const optsArray *array)
 }
 
 /**
- * @brief Gets arguments of a function in a arbitrary expression
+ * @brief Gets arguments of a function in a arbitrary expression.
  *
- * @par opt: The opts structure containing the expression
- * @par	start: The start of the brace-enclosed argument list
+ * @par opt: The opts structure containing the expression.
+ * @par start: The start of the brace-enclosed argument list.
  *
- * @return A vector of the respective argument strings
+ * @return A vector of the respective argument strings.
  */
 stringList xppEvaluator::getFunctionArgs (const std::string &str,
 										  const size_t &ln,
@@ -94,15 +94,15 @@ stringList xppEvaluator::getFunctionArgs (const std::string &str,
 }
 
 /**
- * @brief Gets the next operand in a mathematical expression
+ * @brief Gets the next operand in a mathematical expression.
  *
- * @par expr: The expression we are parsing
- * @par	pos1: Old position which will be udpated
- * @par pos2: Old position at which the search startes
+ * @par expr: The expression we are parsing.
+ * @par	pos1: Old position which will be udpated.
+ * @par pos2: Old position at which the search startes.
  *
- * @return pos1: First position of the operand
- * @return pos2: Position of the mathematical operator after the operand
- * @return string: String between [pos1, pos2-1]
+ * @return pos1: First position of the operand.
+ * @return pos2: Position of the mathematical operator after the operand.
+ * @return string: String between [pos1, pos2-1].
  */
 std::string xppEvaluator::getNextOperand(const std::string &expr,
 										 size_t &pos1,
@@ -113,16 +113,18 @@ std::string xppEvaluator::getNextOperand(const std::string &expr,
 }
 
 /**
- * @brief Utilize a trie search to replace constant expressions in an opts array
+ * @brief Utilize a trie search to replace constant expressions in an opts array.
  *
  * @par arrays: An array of optsArrays containing the parsed expressions.
  */
 void xppEvaluator::replaceConstants(std::vector<optsArray*> &arrays) {
 	for (size_t i=0; i < 2; i++) {
-		keywordTrie::trie trie = createTrie(arrays.at(i));
-		for (size_t j= i+1; j < arrays.size(); j++) {
-			for (opts &opt : *arrays.at(j)) {
-				replaceExpression(trie, arrays.at(i), opt.Expr);
+		optsArray *source = arrays.at(0);
+		arrays.erase(arrays.begin());
+		keywordTrie::trie trie = createTrie(source);
+		for (optsArray *target : arrays) {
+			for (opts &opt : *target) {
+				replaceExpression(trie, source, opt.Expr);
 			}
 		}
 
@@ -130,15 +132,15 @@ void xppEvaluator::replaceConstants(std::vector<optsArray*> &arrays) {
 		 * are stored in the args vector rather than the expression.
 		 */
 		for (opts &opt : parser.Markovs) {
-			for (std::string &str : opt.Args) {
-				replaceExpression(trie, arrays.at(i), str);
+			for (std::string &arg : opt.Args) {
+				replaceExpression(trie, source, arg);
 			}
 		}
 	}
 }
 
 /**
- * @brief Utilize a trie search to replace constant expressions in a string
+ * @brief Utilize a trie search to replace constant expressions in a string.
  *
  * @par trie: The keywordTrie trie with the keywords.
  * @par source: The array containing the replacements.
@@ -149,7 +151,7 @@ void xppEvaluator::replaceExpression(keywordTrie::trie &trie,
 									 std::string &expr) {
 	auto result = trie.parseText(expr);
 	/* Reverse the order of the matches so the indices do not change
-	 * when expression is replaced
+	 * when the expression is replaced.
 	 */
 	std::reverse(result.begin(), result.end());
 	for (auto &res : result) {
@@ -158,16 +160,17 @@ void xppEvaluator::replaceExpression(keywordTrie::trie &trie,
 }
 
 /**
- * @brief Utilize a trie search to replace function expressions in an opts array
+ * @brief Utilize a trie search to replace function expressions in an opts array.
  *
  * @par arrays: An array of optsArrays containing the parsed expressions.
  */
-void xppEvaluator::replaceFunctions(std::vector<optsArray*> &arrays) {
-	keywordTrie::trie trie = createTrie(arrays.at(3));
-	keywordTrie::resultTable resTable = createResultTable(arrays.at(3));
-
-	for (optsArray::size_type j= 4; j < arrays.size(); j++) {
-		for (opts &opt : *arrays.at(j)) {
+void xppEvaluator::replaceFunctions(std::vector<optsArray*> &arrays) {	
+	optsArray *source = arrays.at(0);
+	arrays.erase(arrays.begin());
+	keywordTrie::trie trie = createTrie(source);
+	keywordTrie::resultTable resTable = createResultTable(source);
+	for (optsArray *target : arrays) {
+		for (opts &opt : *target) {
 			replaceFunExpression(trie, resTable, opt.Expr, opt.Line);
 		}
 	}
@@ -176,14 +179,14 @@ void xppEvaluator::replaceFunctions(std::vector<optsArray*> &arrays) {
 	 * are stored in the args vector rather than the expression.
 	 */
 	for (opts &opt : parser.Markovs) {
-		for (std::string &str : opt.Args) {
-			replaceFunExpression(trie, resTable, str, opt.Line);
+		for (std::string &arg : opt.Args) {
+			replaceFunExpression(trie, resTable, arg, opt.Line);
 		}
 	}
 }
 
 /**
- * @brief Utilize a trie search to replace function expressions in a string
+ * @brief Utilize a trie search to replace function expressions in a string.
  *
  * @par trie: The keywordTrie trie with the keywords.
  * @par funcTable: The emit collection of the functions array.
@@ -196,7 +199,7 @@ void xppEvaluator::replaceFunExpression(keywordTrie::trie &trie,
 										const size_t &ln) {
 	auto result = trie.parseText(expr);
 	/* Reverse the order of the matches so the indices do not change
-	 * when expression is replaced
+	 * when the expression is replaced.
 	 */
 	std::reverse(result.begin(), result.end());
 	for (auto &res : result) {
