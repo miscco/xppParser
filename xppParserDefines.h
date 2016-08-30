@@ -1,11 +1,10 @@
 #ifndef XPPPARSERDEFINES_H
 #define XPPPARSERDEFINES_H
 
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "keywordTrie.hpp"
 
 /* Basic structure that contains the textual information of an expression*/
 struct opts {
