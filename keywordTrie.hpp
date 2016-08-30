@@ -63,7 +63,7 @@ struct result {
 	explicit result (const std::string &key, int id)
 		: keyword(key), id(id) {}
 	explicit result (const result &res, int endPos)
-		: keyword(res.keyword), id(res.id), start(endPos-res.keyword.size()+2),
+		: keyword(res.keyword), id(res.id), start(endPos-res.keyword.size()+1),
 		  end(endPos) {}
 };
 

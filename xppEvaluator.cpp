@@ -153,7 +153,7 @@ void xppEvaluator::replaceExpression(keywordTrie::trie &trie,
 	 */
 	std::reverse(result.begin(), result.end());
 	for (auto &res : result) {
-		expr.replace(res.start-1, res.keyword.size(), source->at(res.id).Expr);
+		expr.replace(res.start, res.keyword.size(), source->at(res.id).Expr);
 	}
 }
 
@@ -204,9 +204,9 @@ void xppEvaluator::replaceFunExpression(keywordTrie::trie &trie,
 		stringList args = getFunctionArgs(expr, ln, pos);
 		std::string temp = parser.Functions.at(res.id).Expr;
 		for (auto &res2 : funTable.at(res.id)) {
-			temp.replace(res2.start-1, res2.keyword.size(),
+			temp.replace(res2.start, res2.keyword.size(),
 						 args.at(res2.id));
 		}
-		expr.replace(res.start-1, res.keyword.size()+pos, temp);
+		expr.replace(res.start, res.keyword.size()+pos, temp);
 	}
 }

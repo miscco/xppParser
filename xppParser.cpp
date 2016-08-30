@@ -364,10 +364,10 @@ void xppParser::extractDefinition(void) {
 			case 2:  /* Name' */
 			case 4:  /* Name(t) */
 			case 11: /* Name(0) */
-				opt.Name = lines[i].first.substr(pos1, results.at(0).start-1);
+				opt.Name = lines[i].first.substr(pos1, results.at(0).start);
 				break;
 			case 3: /* dName/dt */
-				opt.Name = lines[i].first.substr(pos1+1, results.at(0).start-2);
+				opt.Name = lines[i].first.substr(pos1+1, results.at(0).start-1);
 				break;
 			case 9: {/* Name(args...) */
 				size_t pos3 = lines[i].first.find("(", pos1);
