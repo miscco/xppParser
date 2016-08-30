@@ -33,7 +33,7 @@ private:
 	void extractMarkov		(void);
 	void extractTable		(void);
 	void extractWiener		(void);
-	void initializeTree		(void);
+	void initializeTries	(void);
 	void readFile			(void);
 	void removeComments		(void);
 	void removeWhitespace	(void);

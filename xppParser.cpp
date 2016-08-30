@@ -17,8 +17,8 @@ xppParser::xppParser(std::string fn)
 		/* Initially read in the ode file */
 		readFile();
 
-		/* Initialize the keyword tree for command parsing */
-		initializeTree();
+		/* Initialize the keyword tries for command parsing */
+		initializeTries();
 
 		/* Check for incorrect brackets */
 		checkBrackets();
@@ -890,7 +890,7 @@ std::string xppParser::getNextWord(const lineNumber &line,
 /**
  * @brief Initializes the keyword tree from the keyword list
  */
-void xppParser::initializeTree (void) {
+void xppParser::initializeTries (void) {
 	keywords.setWholeWords(false);
 	keywords.addString(xppKeywords);
 
