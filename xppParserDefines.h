@@ -30,7 +30,7 @@ typedef std::vector<std::string> stringList;
  */
 typedef std::pair<std::string, int> lineNumber;
 
-static const std::vector<std::string> xppKeywords = {
+static const std::set<std::string> xppKeywords = {
 	"!",
 	"(t+1)",
 	"'",
