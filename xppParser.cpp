@@ -193,6 +193,7 @@ void xppParser::sanitizeKeywordSearch(resultCollection &results,
  * @par pos: The position of the name in line
  */
 void xppParser::checkName(const std::string &name, const lineNumber &line, size_t pos) {
+	keywords.setWholeWords(true);
 	if (!usedNames.parseText(name).empty()) {
 		throw xppParserException(DUPLICATED_NAME, line, pos);
 	} else if (!reservedNames.parseText(name).empty()) {
@@ -202,6 +203,7 @@ void xppParser::checkName(const std::string &name, const lineNumber &line, size_
 	} else if (!options.parseText(name).empty()) {
 		throw xppParserException(RESERVED_OPTION, line, pos);
 	}
+	keywords.setWholeWords(false);
 	usedNames.addString(name);
 }
 

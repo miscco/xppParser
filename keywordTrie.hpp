@@ -46,7 +46,7 @@ struct node {
 	std::vector<node*> children;	/**< Child nodes */
 
 	explicit node () {}
-	explicit node (int d, const char character, const node *par, node *root)
+	explicit node (int d, const char &character, const node *par, node *root)
 		: depth(d), c(character), parent(par), failure(root), output(root) {}
 };
 
@@ -119,7 +119,7 @@ public:
 			return;
 		}
 		node *current = root;
-		for (const char character : key) {
+		for (const char &character : key) {
 			current = findChild(current, character, true);
 		}
 		if (current->id != -1) {
@@ -220,7 +220,7 @@ private:
 	 * @param character The character on the edge to the new node.
 	 * @return The pointer to the newly created node.
 	 */
-	node* addChild (node *parent, const char character) {
+	node* addChild (node *parent, const char &character) {
 		trieNodes.push_back(new node(parent->depth+1, character, parent, root));
 		parent->children.push_back(trieNodes.back());
 		return trieNodes.back();
@@ -234,7 +234,7 @@ private:
 	 * @return The pointer to the matching node (possibly after failure links),
 	 * root or the newly created one.
 	 */
-	node* findChild (node *current, const char character, bool addWord) {
+	node* findChild (node *current, const char &character, bool addWord) {
 		for (node *child : current->children) {
 			if (caseSensitive ? (child->c == character) :
 				(std::tolower(child->c) == std::tolower(character))) {
@@ -253,9 +253,9 @@ private:
 	 * @brief traverseFail Traverse the failure links during a search.
 	 * @param current The original node.
 	 * @param character The character that is beeing searched.
-	 * @return The pointer to the matching node after a failure link or root->
+	 * @return The pointer to the matching node after a failure link or root
 	 */
-	node* traverseFail (const node *current, const char character) {
+	node* traverseFail (const node *current, const char &character) {
 		node *temp = current->failure;
 		while (temp != root) {
 			for (node *failchild : temp->children) {
@@ -265,7 +265,12 @@ private:
 			}
 			temp = temp->failure;
 		}
-		return temp;
+		for (node *rootchild : root->children) {
+			if (rootchild->c == character) {
+				return rootchild;
+			}
+		}
+		return root;
 	}
 
 	/**
