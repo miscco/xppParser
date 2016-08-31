@@ -746,7 +746,7 @@ void xppParser::findNextAssignment(const lineNumber &line,
 								   size_t &pos1,
 								   size_t &pos2) {
 	std::stack<char> brackets;
-	pos1 = pos2;
+	pos1 = pos2 + 1;
 	auto it = line.first.begin();
 	for (std::advance(it, pos2); it != line.first.end(); ++it) {
 		switch (*it) {
@@ -826,7 +826,7 @@ std::string xppParser::getNextExpr(const lineNumber &line,
 								   size_t &pos1,
 								   size_t &pos2) {
 	findNextAssignment(line, pos1, pos2);
-	std::string expr = line.first.substr(pos1+1, pos2-pos1-2);
+	std::string expr = line.first.substr(pos1, pos2-pos1-1);
 	/* Remove whitespaces */
 	size_t pos;
 	while ((pos = expr.find_first_of(" \t\f\v\r")) != std::string::npos) {
