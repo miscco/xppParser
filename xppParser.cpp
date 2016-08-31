@@ -1,7 +1,7 @@
 #include <xppParser.h>
 
 /**
- * @brief Constructor of the parser object
+ * @brief xppParser::xppParser Default constructor of the parser object
  *
  * @param fn string representing the file name of the ode file
  *
@@ -62,11 +62,18 @@ xppParser::xppParser(std::string fn)
 		throw;
 	}
 }
+
+/**
+ * @brief xppParser::xppParser Copy constructor of the parser object
+ * @param parser The parser object that should be copied
+ */
 xppParser::xppParser(const xppParser &parser)
-	: keywords(parser.keywords),
+	: /* Keyword tries */
+	  keywords(parser.keywords),
 	  options(parser.options),
 	  reservedNames(parser.reservedNames),
 	  usedNames(parser.usedNames),
+	  /* Opts arrays */
 	  Algebraic(parser.Algebraic),
 	  Auxiliar(parser.Auxiliar),
 	  Boundaries(parser.Boundaries),
