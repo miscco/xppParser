@@ -144,45 +144,6 @@ void xppParser::checkBrackets() {
 }
 
 /**
- * @brief Checks a keyword search in case of multiple matches
- *
- * @par result: The emit collection from the keyword search
- * @par character: The character after the first word.
- *
- * This sanitizes the keyword search in case we have multiple matches. If
- * multiple keywords were found, the name of the expression contains a keyword.
- * This is only possible if it is either an temporary expression or a keyword
- * that is merged with the name. Consequently remove all other findings. If
- * there were no valid keywords left/found this must be a temporary expression.
- * So create a fake result with and index equal to the size of xppKeywords.
- */
-void xppParser::sanitizeKeywordSearch(resultCollection &results,
-									  const char &character) {
-	if(character == '=') {
-		auto it = results.begin();
-		for (auto &res : results) {
-			if (res.id == 0 || /* !Name */
-				res.id == 2 || /* Name' */
-				res.id == 3 || /* dName/dt */
-				res.id == 9) { /* Name(Args) */
-				it++;
-			} else if (res.id == 1 || /* Name(t) */
-					   res.id == 4 || /* Name(t+1) */
-					   res.id == 11) {  /* Name(0) */
-				results.erase(--it);  /* Remove Name(Args) */
-			} else {
-				results.erase(it);
-			}
-
-		}
-		/* No valid keyword left, this must be an expression */
-		if (results.size() == 0) {
-			results.push_back(keywordTrie::result("", xppKeywords.size()));
-		}
-	}
-}
-
-/**
  * @brief Checks whether a given name is already taken or reserved
  *
  * @par name: The name of the new definition
@@ -341,21 +302,14 @@ void xppParser::extractDefinition(void) {
 		if (pos2 == std::string::npos) {
 			throw xppParserException(UNKNOWN_ASSIGNMENT, lines[i], pos1+1);
 		}
-		auto results = keywords.parseText(key);
+		/* Search for keywords */
+		auto res = keywordSearch(key, lines[i].first.at(pos2));
 
 		while (pos2 != std::string::npos) {
 			opts opt;
 			opt.Line = lines[i].second;
 
-			/* Sanity check whether an temporary expression was found or the
-			 * parsed name contained a keyword. This is only relevant if there
-			 * was no separate keyword, e.g Name(t). To simplify the handling
-			 * below, we set get_index() of a temporary expression to
-			 * keywords.size().
-			 */
-			sanitizeKeywordSearch(results, lines[i].first.at(pos2));
-
-			switch (results.at(0).id) {
+			switch (res.id) {
 			case 0: /* !Name */
 				opt.Name = lines[i].first.substr(pos1+1, pos2-pos1-1);
 				break;
@@ -363,10 +317,10 @@ void xppParser::extractDefinition(void) {
 			case 2:  /* Name' */
 			case 4:  /* Name(t) */
 			case 11: /* Name(0) */
-				opt.Name = lines[i].first.substr(pos1, results.at(0).start);
+				opt.Name = lines[i].first.substr(pos1, res.start);
 				break;
 			case 3: /* dName/dt */
-				opt.Name = lines[i].first.substr(pos1+1, results.at(0).start-1);
+				opt.Name = lines[i].first.substr(pos1+1, res.start-1);
 				break;
 			case 9: {/* Name(args...) */
 				size_t pos3 = lines[i].first.find("(", pos1);
@@ -391,14 +345,14 @@ void xppParser::extractDefinition(void) {
 			/* Check whether the name is already taken/reserved, except for
 			 * initial conditions, where we check for existence.
 			 */
-			if (results.at(0).id != 10 &&
-				results.at(0).id != 17) {
+			if (res.id != 10 &&
+				res.id != 17) {
 				checkName(opt.Name, lines[i], pos1);
-			} else if (results.at(0).id == 10) {
+			} else if (res.id == 10) {
 				if (usedNames.parseText(opt.Name).empty()) {
 					throw xppParserException(UNKNOWN_VARIABLE, lines[i], pos1);
 				}
-			} else if (results.at(0).id == 17) {
+			} else if (res.id == 17) {
 				if (options.parseText(opt.Name).empty()) {
 					throw xppParserException(UNKNOWN_OPTION, lines[i], pos1);
 				}
@@ -408,12 +362,12 @@ void xppParser::extractDefinition(void) {
 			opt.Expr = getNextExpr(lines[i], pos1, pos2);
 
 			/* Check numbers are indeed numeric expressions */
-			if (results.at(0).id == 8) {
+			if (res.id == 8) {
 				if (!isNumeric(opt.Expr)) {
 					throw xppParserException(EXPECTED_NUMBER, lines[i], pos1);
 				}
 				/* Check if all function arguments are used */
-			} else if (results.at(0).id == 9) {
+			} else if (res.id == 9) {
 				size_t pos3 = opt.Name.length()+1;
 				for (std::string &str : opt.Args) {
 					if (opt.Expr.find(str) == std::string::npos) {
@@ -424,7 +378,7 @@ void xppParser::extractDefinition(void) {
 			}
 
 			/* Find the type of the keyword */
-			switch(results.at(0).id) {
+			switch(res.id) {
 			case 0:
 				Constants.push_back(opt);
 				break;
@@ -1028,6 +982,46 @@ void xppParser::removeWhitespace() {
 		}
 		i++;
 	}
+}
+
+/**
+ * @brief Checks a keyword search in case of multiple matches
+ *
+ * @par expr: The std::string to be searched for the keyword
+ * @par character: The character after expr.
+ *
+ * This sanitizes the keyword search in case we have multiple matches. If
+ * multiple keywords were found, the name of the expression contains a keyword.
+ * This is only possible if it is either an temporary expression or a keyword
+ * that is merged with the name. Consequently remove all other findings. If
+ * there were no valid keywords left/found this must be a temporary expression.
+ * So create a fake result with and index equal to the size of xppKeywords.
+ */
+keywordTrie::result xppParser::keywordSearch(const std::string &expr,
+											 const char &character) {
+	auto results = keywords.parseText(expr);
+	if(character == '=') {
+		auto it = results.begin();
+		for (auto &res : results) {
+			if (res.id == 0 || /* !Name */
+				res.id == 2 || /* Name' */
+				res.id == 3 || /* dName/dt */
+				res.id == 9) { /* Name(Args) */
+				it++;
+			} else if (res.id == 1 || /* Name(t) */
+					   res.id == 4 || /* Name(t+1) */
+					   res.id == 11) {  /* Name(0) */
+				results.erase(--it);  /* Remove Name(Args) */
+			} else {
+				results.erase(it);
+			}
+		}
+		/* No valid keyword left, this must be an expression */
+		if (results.size() == 0) {
+			results.push_back(keywordTrie::result("", xppKeywords.size()));
+		}
+	}
+	return results.front();
 }
 
 /**
