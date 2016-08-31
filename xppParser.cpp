@@ -808,9 +808,11 @@ std::string xppParser::getNextExpr(const lineNumber &line,
 			break;
 		}
 	}
+	/* If none was found copy the whole string */
 	if (pos1 == pos2 +1) {
 		pos2 = std::string::npos;
 	}
+
 	std::string expr = line.first.substr(pos1, pos2-pos1-1);
 
 	/* Remove whitespaces */
