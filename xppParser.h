@@ -42,7 +42,7 @@ private:
 	void checkBrackets		(void);
 	void checkName			(const std::string &name, const lineNumber &line, size_t pos);
 
-	stringList getList		(const std::string &line, unsigned ln,
+	stringList  getList		(const std::string &line, unsigned ln,
 							 const std::string &closure, const std::string &delim);
 	std::string getNextExpr (const lineNumber &line, size_t &pos1,size_t &pos2);
 	std::string getNextWord (const lineNumber &line, size_t &pos1,size_t &pos2);

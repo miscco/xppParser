@@ -213,17 +213,17 @@ void xppParser::expandArrays() {
 
 			/* Copy the lines of the assignment into a separate vector */
 			std::vector<lineNumber> arrayExpressions;
-			int numLines = 1;
+			auto line2 = std::next(line);
 			if (line->first.substr(pos1-1, 1) == "%") {
 				/* Multiline statements end with a line with a single "%" */
 				while (true) {
-					size_t endArray = std::next(line,numLines)->first.find("%");
+					size_t endArray = line2->first.find("%");
 					if (endArray != std::string::npos) {
-						numLines++;
+						line2++;
 						break;
 					}
-					arrayExpressions.push_back(*(std::next(line,numLines)));
-					numLines++;
+					arrayExpressions.push_back(*line2);
+					line2++;
 				}
 			} else {
 				arrayExpressions.push_back(*line);
@@ -232,7 +232,7 @@ void xppParser::expandArrays() {
 				 */
 				arrayExpressions[0].first.replace(pos1, pos3, "[j]");
 			}
-			lines.erase(line, std::next(line,numLines));
+			lines.erase(line, line2);
 
 			/* Expand the array expressions and insert it*/
 			std::vector<lineNumber> arrayLines;
@@ -474,12 +474,10 @@ void xppParser::extractExport(void) {
 		if (pos1 != std::string::npos) {
 			opts opt;
 			opt.Line = line->second;
-			stringList temp;
-			temp = getList(getNextWord(*line, pos1, pos2), opt.Line, "}", ",");
-			opt.Args = temp;
-			opt.Expr = std::to_string(temp.size());
+			opt.Args = getList(getNextWord(*line, pos1, pos2), opt.Line, "}", ",");;
+			opt.Expr = std::to_string(opt.Args.size());
 
-			temp = getList(getNextWord(*line, pos1, pos2), opt.Line, "}", ",");
+			stringList temp = getList(getNextWord(*line, pos1, pos2), opt.Line, "}", ",");
 			opt.Args.insert(opt.Args.end(), temp.begin(), temp.end());
 
 			Exports.push_back(opt);
@@ -507,8 +505,7 @@ void xppParser::extractGlobal(void) {
 			/* Parse the sign flag. For simplicity store it in the name slot */
 			opt.Name = getNextWord(*line, pos1, pos2);
 
-			/* Parse flip condition.
-			 */
+			/* Parse flip condition. */
 			pos1 = line->first.find_first_not_of(" ", pos2);
 			pos2 = line->first.find("{", pos1);
 			opt.Expr = line->first.substr(pos1, pos2-pos1-1);
@@ -537,38 +534,37 @@ void xppParser::extractMarkov(void) {
 		if (pos1 != std::string::npos) {
 			opts opt;
 			opt.Line = line->second;
-			int nstates;
 
-			/* Parse the name */
 			opt.Name = getNextWord(*line, pos1, pos2);
 			checkName(opt.Name, *line, pos1);
 
 			/* Parse the number of states */
+			int nstates;
 			try {
 				nstates = std::stoi(getNextWord(*line, pos1, pos2));
 			} catch (std::invalid_argument) {
 				throw xppParserException(EXPECTED_NUMBER, *line, pos1);
 			}
-			/* Store the number of states for convenience */
 			opt.Expr = nstates;
 
 			/* Parse the transition probabilities */
-			for (int j=0; j < nstates; j++) {
+			for (int i=0; i < nstates; i++) {
+				auto line2 = std::next(line);
 				pos2 = 0;
-				for (int k=0; k < nstates; k++) {
-					pos1 = std::next(line)->first.find("{", pos2);
-					pos2 = std::next(line)->first.find("}", pos1);
+				for (int j=0; j < nstates; j++) {
+					pos1 = line2->first.find("{", pos2);
+					pos2 = line2->first.find("}", pos1);
 					if (pos1 == std::string::npos) {
 						throw xppParserException(MISSING_MARKOV_ASSIGNMENT,
-												 *(std::next(line)), pos2);
+												 *line2, pos2);
 					}
-					opt.Args.push_back(std::next(line)->first.substr(pos1+1, pos2-pos1-1));
+					opt.Args.push_back(line2->first.substr(pos1+1, pos2-pos1-1));
 				}
-				if (pos2 != std::next(line)->first.size()-1) {
+				if (pos2 != line2->first.size()-1) {
 					throw xppParserException(WRONG_MARKOV_ASSIGNMENT,
-											 *(std::next(line)), std::next(line)->first.size());
+											 *line2, line2->first.size());
 				}
-				lines.erase(std::next(line));
+				lines.erase(line2);
 			}
 			Markovs.push_back(opt);
 			lines.erase(line);
