@@ -236,6 +236,7 @@ void xppParser::expandArrays() {
 
 			/* Expand the array expressions and insert it*/
 			std::vector<lineNumber> arrayLines;
+			arrayLines.reserve(end-start+1);
 			for (int j = start; j <= end; j++) {
 				expandArrayLines(arrayLines, arrayExpressions, j);
 			}
@@ -548,6 +549,7 @@ void xppParser::extractMarkov(void) {
 			opt.Expr = nstates;
 
 			/* Parse the transition probabilities */
+			opt.Args.reserve(nstates*nstates);
 			for (int i=0; i < nstates; i++) {
 				auto line2 = std::next(line);
 				pos2 = 0;
