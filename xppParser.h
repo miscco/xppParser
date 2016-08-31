@@ -18,7 +18,6 @@
 
 class xppParser {
 public:
-	typedef std::vector<keywordTrie::result> resultCollection;
 	xppParser(std::string fn);
 	xppParser(const xppParser &parser);
 
