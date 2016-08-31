@@ -294,7 +294,7 @@ void xppParser::expandArrays() {
  */
 void xppParser::expandArrayLines(std::vector<lineNumber>& lines,
 								 const std::vector<lineNumber>& expressions,
-								 int idx) {
+								 const int idx) {
 	/* Initialize the parser with the variable "j" */
 	mup::ParserX parser;
 	mup::Value j((mup::int_type)idx);
@@ -388,12 +388,11 @@ void xppParser::extractDefinition(void) {
 				break;
 			}
 
-
 			/* Check whether the name is already taken/reserved, except for
 			 * initial conditions, where we check for existence.
 			 */
 			if (results.at(0).id != 10 &&
-					results.at(0).id != 17) {
+				results.at(0).id != 17) {
 				checkName(opt.Name, lines[i], pos1);
 			} else if (results.at(0).id == 10) {
 				if (usedNames.parseText(opt.Name).empty()) {

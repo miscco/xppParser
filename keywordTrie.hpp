@@ -76,7 +76,7 @@ typedef std::vector<resultCollection>	 resultTable;
 class trie
 {
 private:
-	node				*root = nullptr;		/**< The root node */
+	node				*root		  = nullptr;/**< The root node */
 	std::vector<node*>	trieNodes;				/**< Container of the node pointers */
 	resultCollection	keywords;				/**< Container of the result stubs */
 	bool				caseSensitive = true;	/**< Flag for case sensitivity */

@@ -26,7 +26,7 @@ private:
 	void expandArrays		(void);
 	void expandArrayLines	(std::vector<lineNumber> &lines,
 							 const std::vector<lineNumber> &expressions,
-							 int idx);
+							 const int idx);
 	void extractDefinition	(void);
 	void extractExport		(void);
 	void extractGlobal		(void);
