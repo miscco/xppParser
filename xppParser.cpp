@@ -1007,10 +1007,10 @@ void xppParser::removeWhitespace() {
  */
 keywordTrie::result xppParser::keywordSearch(const std::string &expr,
 											 const char &character) {
-	auto results = keywords.parseText(expr);
+	keywordTrie::resultCollection results = keywords.parseText(expr);
 	if(character == '=') {
 		auto it = results.begin();
-		for (auto &res : results) {
+		for (keywordTrie::result &res : results) {
 			if (res.id == 0 || /* !Name */
 				res.id == 2 || /* Name' */
 				res.id == 3 || /* dName/dt */

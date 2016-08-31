@@ -52,12 +52,12 @@ keywordTrie::resultTable xppEvaluator::createResultTable(const optsArray *array)
 	for (const opts &opt : *array) {
 		keywordTrie::trie trie;
 		trie.addString(opt.Args);
-		auto result = trie.parseText(opt.Expr);
+		keywordTrie::resultCollection results = trie.parseText(opt.Expr);
 		/* Reverse the order of the matches so the indices do not change
 		 * when expression is replaced
 		 */
-		std::reverse(result.begin(), result.end());
-		table.push_back(result);
+		std::reverse(results.begin(), results.end());
+		table.push_back(results);
 	}
 	return table;
 }
@@ -148,12 +148,12 @@ void xppEvaluator::replaceConstants(std::vector<optsArray*> &arrays) {
 void xppEvaluator::replaceExpression(keywordTrie::trie &trie,
 									 const optsArray *source,
 									 std::string &expr) {
-	auto result = trie.parseText(expr);
+	keywordTrie::resultCollection results = trie.parseText(expr);
 	/* Reverse the order of the matches so the indices do not change
 	 * when the expression is replaced.
 	 */
-	std::reverse(result.begin(), result.end());
-	for (auto &res : result) {
+	std::reverse(results.begin(), results.end());
+	for (keywordTrie::result &res : results) {
 		expr.replace(res.start, res.keyword.size(), source->at(res.id).Expr);
 	}
 }
@@ -163,7 +163,7 @@ void xppEvaluator::replaceExpression(keywordTrie::trie &trie,
  *
  * @par arrays: An array of optsArrays containing the parsed expressions.
  */
-void xppEvaluator::replaceFunctions(std::vector<optsArray*> &arrays) {	
+void xppEvaluator::replaceFunctions(std::vector<optsArray*> &arrays) {
 	optsArray *source = arrays.at(0);
 	arrays.erase(arrays.begin());
 	keywordTrie::trie trie = createTrie(source);
@@ -196,16 +196,16 @@ void xppEvaluator::replaceFunExpression(keywordTrie::trie &trie,
 										const keywordTrie::resultTable &funTable,
 										std::string &expr,
 										const size_t &ln) {
-	auto result = trie.parseText(expr);
+	keywordTrie::resultCollection results = trie.parseText(expr);
 	/* Reverse the order of the matches so the indices do not change
 	 * when the expression is replaced.
 	 */
-	std::reverse(result.begin(), result.end());
-	for (auto &res : result) {
+	std::reverse(results.begin(), results.end());
+	for (keywordTrie::result &res : results) {
 		size_t pos = res.end+2;
 		stringList args = getFunctionArgs(expr, ln, pos);
 		std::string temp = parser.Functions.at(res.id).Expr;
-		for (auto &res2 : funTable.at(res.id)) {
+		for (const keywordTrie::result &res2 : funTable.at(res.id)) {
 			temp.replace(res2.start, res2.keyword.size(),
 						 args.at(res2.id));
 		}
