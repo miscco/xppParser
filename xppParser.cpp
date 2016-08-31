@@ -731,60 +731,6 @@ void xppParser::extractWiener(void) {
 }
 
 /**
- * @brief Finds the position of the next assignment within a given line
- *
- * @par line: String we are searching in
- * @par	pos1: Old start position which will be udpated
- * @par	pos2: Position of the last equal sign
- *
- * It is possible that a single line contains multiple assignments that are
- * separated by a commata. Therefore, search for the next commata after pos2
- * that is not encapsulated by a bracket and update pos1 to the position after
- * it.
- */
-void xppParser::findNextAssignment(const lineNumber &line,
-								   size_t &pos1,
-								   size_t &pos2) {
-	std::stack<char> brackets;
-	pos1 = pos2 + 1;
-	auto it = line.first.begin();
-	for (std::advance(it, pos2); it != line.first.end(); ++it) {
-		switch (*it) {
-		case '(':
-			brackets.push(')');
-			break;
-		case '{':
-			brackets.push('}');
-			break;
-		case '[':
-			brackets.push(']');
-			break;
-		case ')':
-			brackets.pop();
-			break;
-		case '}':
-			brackets.pop();
-			break;
-		case ']':
-			brackets.pop();
-			break;
-		case ',':
-			if (brackets.empty()) {
-				pos2 = std::distance(line.first.begin(), it)+1;
-				return;
-			} else {
-				continue;
-			}
-			break;
-		default:
-			continue;
-			break;
-		}
-	}
-	pos2 = std::string::npos;
-}
-
-/**
  * @brief Extracts elements from a brace enclosed list
  *
  * @par line: String we are searching in
@@ -818,20 +764,57 @@ stringList xppParser::getList(const std::string& line,
  * @par line: String we are searching in
  * @par	pos1: Old position. Will be updated to the position after the commata
  * or std::string::npos.
- * @par	pos2: Position of the equal sign
+ * @par	pos2: Position of the equal sign before the expression
  *
  * @return string: String between pos2 and the next commata outside of braces
  */
 std::string xppParser::getNextExpr(const lineNumber &line,
 								   size_t &pos1,
 								   size_t &pos2) {
-	findNextAssignment(line, pos1, pos2);
-	std::string expr = line.first.substr(pos1, pos2-pos1-1);
-	/* Remove whitespaces */
-	size_t pos;
-	while ((pos = expr.find_first_of(" \t\f\v\r")) != std::string::npos) {
-		expr.erase(pos, 1);
+	pos1 = pos2 + 1;
+	/* Search for the next commata outside of brackets */
+	std::stack<char> brackets;
+	auto it = line.first.begin();
+	for (std::advance(it, pos2); it != line.first.end(); ++it) {
+		switch (*it) {
+		case '(':
+			brackets.push(')');
+			break;
+		case '{':
+			brackets.push('}');
+			break;
+		case '[':
+			brackets.push(']');
+			break;
+		case ')':
+			brackets.pop();
+			break;
+		case '}':
+			brackets.pop();
+			break;
+		case ']':
+			brackets.pop();
+			break;
+		case ',':
+			if (brackets.empty()) {
+				pos2 = std::distance(line.first.begin(), it)+1;
+				it = std::prev(line.first.end());
+			} else {
+				continue;
+			}
+			break;
+		default:
+			continue;
+			break;
+		}
 	}
+	if (pos1 == pos2 +1) {
+		pos2 = std::string::npos;
+	}
+	std::string expr = line.first.substr(pos1, pos2-pos1-1);
+
+	/* Remove whitespaces */
+	expr.erase(remove_if(expr.begin(), expr.end(), isspace), expr.end());
 	return expr;
 }
 
