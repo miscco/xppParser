@@ -775,8 +775,10 @@ void xppParser::findNextAssignment(const lineNumber &line,
 			} else {
 				continue;
 			}
+			break;
 		default:
 			continue;
+			break;
 		}
 	}
 	pos2 = std::string::npos;
