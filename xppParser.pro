@@ -4,7 +4,7 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 
-include(muparserx/muparserx.pri)
+include(parser/muparserx/muparserx.pri)
 
 SOURCES +=	main.cpp \
 			parser/xppEvaluator.cpp \

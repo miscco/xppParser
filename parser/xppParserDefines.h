@@ -27,8 +27,11 @@ typedef std::vector<std::string> stringList;
 /* Pair containing a parsed line and the original line number in the ode file.
  * This is mainly usefull for debugging if an error is thrown.
  */
-typedef std::pair<std::string, int> lineNumber;
+typedef std::pair<std::string, unsigned> lineNumber;
 
+/* Vector containing the keywords utilized by xppaut. We cannot use a set here,
+ * as that would change the ordering of the symbols
+ */
 static const std::vector<std::string> xppKeywords = {
 	"!",
 	"(t+1)",
@@ -55,6 +58,7 @@ static const std::vector<std::string> xppKeywords = {
 	"export"
 };
 
+/* Set of the valid mathematical operators */
 static const std::set<std::string> xppOperators {
 	"+",
 	"-",
@@ -64,6 +68,7 @@ static const std::set<std::string> xppOperators {
 	"**"
 };
 
+/* Set of the reserved function names */
 static const std::set<std::string> xppReservedNames {
 	"sin",
 	"cos",
@@ -108,6 +113,7 @@ static const std::set<std::string> xppReservedNames {
 	"not"
 };
 
+/* Set of the options that can be modified in an ode file */
 static const std::set<std::string> xppOptionNames {
 	"MAXSTOR",
 	"BACK",
