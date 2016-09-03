@@ -7,14 +7,14 @@ CONFIG -= qt
 include(parser/muparserx/muparserx.pri)
 
 SOURCES +=	main.cpp \
-			parser/xppEvaluator.cpp \
-			parser/xppParser.cpp
+		parser/xppEvaluator.cpp \
+		parser/xppParser.cpp
 
 HEADERS +=	parser/keywordTrie.hpp \
-			parser/xppEvaluator.h \
-			parser/xppParser.h \
-			parser/xppParserDefines.h \
-			parser/xppParserException.h
+		parser/xppEvaluator.h \
+		parser/xppParser.h \
+		parser/xppParserDefines.h \
+		parser/xppParserException.h
 
 INCLUDEPATH += parser
 
