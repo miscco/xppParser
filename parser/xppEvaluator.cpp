@@ -87,7 +87,7 @@ stringList xppEvaluator::getFunctionArgs (const std::string &str,
 		if (parser.usedNames.parseText(args.back()).empty()) {
 			throw xppParserException(UNKNOWN_NAME, std::make_pair(str, ln), pos1);
 		}
-	}
+    }
 	start = end+2-start;
 	return args;
 }
