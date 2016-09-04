@@ -145,7 +145,7 @@ void xppEvaluator::replaceConstants(std::vector<optsArray*> &arrays) {
  * @par source: The array containing the replacements.
  * @par str: The string that should be searched.
  */
-void xppEvaluator::replaceExpression(keywordTrie::trie &trie,
+void xppEvaluator::replaceExpression(const keywordTrie::trie &trie,
 									 const optsArray *source,
 									 std::string &expr) {
 	keywordTrie::resultCollection results = trie.parseText(expr);
@@ -192,7 +192,7 @@ void xppEvaluator::replaceFunctions(std::vector<optsArray*> &arrays) {
  * @par str: The string that should be searched.
  * @par ln: The line number for error throws.
  */
-void xppEvaluator::replaceFunExpression(keywordTrie::trie &trie,
+void xppEvaluator::replaceFunExpression(const keywordTrie::trie &trie,
 										const keywordTrie::resultTable &funTable,
 										std::string &expr,
 										const size_t &ln) {
