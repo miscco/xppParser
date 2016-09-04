@@ -893,7 +893,7 @@ void xppParser::readFile(void) {
 		size_t pos1 = temp.find_first_not_of(" \t\f\v\r\n");
 		if (temp == "done") {
 			break;
-		} else if (temp.length() != 0 && pos1 != std::string::npos) {
+        } else if (!temp.empty() && pos1 != std::string::npos) {
 			/* Remove trailing and superflous whitespaces */
 			temp.erase(0, pos1);
 			temp.resize(temp.find_last_not_of(" \t\f\v\r\n")+1);
