@@ -38,15 +38,15 @@ namespace keywordTrie {
  */
 struct node {
     int id              = -1;		/**< Keyword index */
-    unsigned depth      = 0;		/**< Depth in the trie*/
-    char c              = '\0';		/**< Character labelling the incoming edge */
+    const unsigned depth= 0;		/**< Depth in the trie*/
+    const char c        = '\0';		/**< Character labelling the incoming edge */
     const node *parent	= nullptr;	/**< Parent node */
     node *failure       = nullptr;	/**< Failure link */
     node *output        = nullptr;	/**< Output link */
     std::vector<node*> children;	/**< Child nodes */
 
     explicit node () {}
-    explicit node (int d, const char &character, const node *par, node *root)
+    explicit node (const unsigned d, const char &character, const node *par, node *root)
         : depth(d), c(character), parent(par), failure(root), output(root) {}
 };
 
@@ -56,13 +56,13 @@ struct node {
  */
 struct result {
     std::string keyword;	/**< The found keyword */
-    int         id;			/**< The index of the keyword in the keyword list*/
-    int			start;		/**< The starting position of the match */
-    int			end;		/**< The end position of the match */
+    unsigned    id;			/**< The index of the keyword in the keyword list*/
+    unsigned    start;		/**< The starting position of the match */
+    unsigned    end;		/**< The end position of the match */
 
-    explicit result (const std::string &key, int id)
+    explicit result (const std::string &key, const unsigned id)
         : keyword(key), id(id) {}
-    explicit result (const result &res, int endPos)
+    explicit result (const result &res, const unsigned endPos)
         : keyword(res.keyword), id(res.id), start(endPos-res.keyword.size()+1),
           end(endPos) {}
 };
@@ -241,7 +241,7 @@ private:
      * @return The pointer to the matching node (possibly after failure links),
      * root or the newly created one.
      */
-    node* findChild (node *current, const char &character) const {
+    node* findChild (const node *current, const char &character) const {
         for (node *child : current->children) {
             if (child->c == character) {
                 return child;

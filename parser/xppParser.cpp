@@ -226,11 +226,11 @@ void xppParser::expandArrays() {
 				while (true) {
 					size_t endArray = line2->first.find("%");
 					if (endArray != std::string::npos) {
-						line2++;
+                        ++line2;
 						break;
 					}
 					arrayExpressions.push_back(*line2);
-					line2++;
+                    ++line2;
 				}
 			} else {
 				arrayExpressions.push_back(*line);
@@ -661,7 +661,7 @@ void xppParser::extractTable(void) {
 				/* Get the number of points */
 				try {
 					getline(fileStream, temp.first);
-					temp.second++;
+                    ++temp.second;
 					npoints = std::stoi(temp.first);
 				} catch (std::invalid_argument) {
 					throw xppParserException(EXPECTED_NUMBER, temp, pos1);
@@ -669,7 +669,7 @@ void xppParser::extractTable(void) {
 
 				/* Get the bounds */
 				getline(fileStream, temp.first);
-				temp.second++;
+                ++temp.second;
 				parser.SetExpr(temp.first);
 				try {
 					xLow = parser.Eval().GetFloat();
@@ -677,7 +677,7 @@ void xppParser::extractTable(void) {
 					throw xppParserException(EXPECTED_NUMBER, temp, pos1);
 				}
 				getline(fileStream, temp.first);
-				temp.second++;
+                ++temp.second;
 				parser.SetExpr(temp.first);
 				try {
 					xHigh = parser.Eval().GetFloat();
@@ -690,7 +690,7 @@ void xppParser::extractTable(void) {
 					opt.Args.reserve(npoints);
 					for(unsigned j = 0; j < npoints; j++) {
 						if (getline(fileStream, temp.first)) {
-							temp.second++;
+                            ++temp.second;
 							parser.SetExpr(temp.first);
 							opt.Args.push_back(parser.Eval().ToString());
 						} else {
@@ -903,7 +903,7 @@ void xppParser::readFile(void) {
 			temp.erase(last, temp.end());
 			lines.push_back(std::make_pair(temp, lineCount));
 		}
-		lineCount++;
+        ++lineCount;
 	}
 
 	if (lines.size() == 0) {
@@ -1007,7 +1007,7 @@ keywordTrie::result xppParser::keywordSearch(const std::string &expr,
 				res.id == 2 || /* Name' */
 				res.id == 3 || /* dName/dt */
 				res.id == 9) { /* Name(Args) */
-				it++;
+                ++it;
 			} else if (res.id == 1 || /* Name(t) */
 					   res.id == 4 || /* Name(t+1) */
 					   res.id == 11) {  /* Name(0) */
