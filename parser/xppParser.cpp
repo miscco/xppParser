@@ -319,8 +319,7 @@ void xppParser::extractDefinition(void) {
 		auto res = keywordSearch(key, line->first.at(pos2));
 
 		while (pos2 != std::string::npos) {
-			opts opt;
-			opt.Line = line->second;
+            opts opt(line->second);
 
 			switch (res.id) {
 			case 0: /* !Name */
@@ -480,8 +479,7 @@ void xppParser::extractExport(void) {
 		std::size_t pos1 = line->first.find("export");
 		std::size_t pos2 = line->first.find(" ", pos1);
 		if (pos1 != std::string::npos) {
-			opts opt;
-			opt.Line = line->second;
+            opts opt(line->second);
 			opt.Args = getList(getNextWord(*line, pos1, pos2), opt.Line, "}", ",");;
 			opt.Expr = std::to_string(opt.Args.size());
 
@@ -507,8 +505,7 @@ void xppParser::extractGlobal(void) {
 		std::size_t pos1 = line->first.find("global");
 		std::size_t pos2 = line->first.find(" ", pos1);
 		if (pos1 != std::string::npos) {
-			opts opt;
-			opt.Line = line->second;
+            opts opt(line->second);
 
 			/* Parse the sign flag. For simplicity store it in the name slot */
 			opt.Name = getNextWord(*line, pos1, pos2);
@@ -540,8 +537,7 @@ void xppParser::extractMarkov(void) {
 		std::size_t pos1 = line->first.find("markov");
 		std::size_t pos2 = line->first.find(" ", pos1);
 		if (pos1 != std::string::npos) {
-			opts opt;
-			opt.Line = line->second;
+            opts opt(line->second);
 
 			opt.Name = getNextWord(*line, pos1, pos2);
 			checkName(opt.Name, *line, pos1);
@@ -595,8 +591,8 @@ void xppParser::extractTable(void) {
 		std::size_t pos1 = line->first.find("table");
 		std::size_t pos2 = line->first.find(" ", pos1);
 		if (pos1 != std::string::npos) {
-			opts opt;
-			opt.Line = line->second;
+            opts opt(line->second);
+
 			unsigned npoints;
 			double xLow, xHigh;
 
