@@ -48,7 +48,7 @@ struct xppMainColor {
 	/**
 	 * @brief colorMap the utilized color map
 	 */
-	xppColorMap colorMap			= C_NORM;
+	xppColorMap colorMap = C_NORM;
 };
 
 
@@ -68,7 +68,7 @@ struct xppAutoColor {
 	/**
 	 * @brief colorMap the utilized color map
 	 */
-	xppColorMap colorMap			= C_NORM;
+	xppColorMap colorMap = C_NORM;
 };
 
 #endif // XPPCOLOR_H

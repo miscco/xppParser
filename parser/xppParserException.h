@@ -43,6 +43,15 @@ public:
 		case DUPLICATED_NAME:
 			m_msg = std::string("Name has already been reserved");
 			break;
+		case EXPECTED_LIST_ARGUMENT:
+			m_msg = std::string("Missing argument in list");
+			break;
+		case EXPECTED_NUMBER:
+			m_msg = std::string("Cannot parse number");
+			break;
+		case EXPECTED_TABLE_ASSIGNMENT:
+			m_msg = std::string("Missing value for the lookup table");
+			break;
 		case MISSING_ARGUMENT:
 			m_msg = std::string("Cannot find function argument");
 			break;
@@ -54,15 +63,6 @@ public:
 			break;
 		case MISSING_OPENING_BRACKET:
 			m_msg = std::string("Cannot find opening bracket");
-			break;
-		case EXPECTED_LIST_ARGUMENT:
-			m_msg = std::string("Missing argument in list");
-			break;
-		case EXPECTED_NUMBER:
-			m_msg = std::string("Cannot parse number");
-			break;
-		case EXPECTED_TABLE_ASSIGNMENT:
-			m_msg = std::string("Missing value for the lookup table");
 			break;
 		case RESERVED_FUNCTION:
 			m_msg = std::string("Given function name is reserved");
