@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "xppColor.h"
-#include "xppSolver.h"
+#include "xppSolverSettings.h"
 #include "parser/xppParser.h"
 
 

@@ -1,5 +1,5 @@
-#ifndef XPPSOLVER_H
-#define XPPSOLVER_H
+#ifndef XPPSOLVERSETTINGS_H
+#define XPPSOLVERSETTINGS_H
 
 #include <stdexcept>
 #include <string>
@@ -132,5 +132,5 @@ private:
 
 };
 
-#endif // XPPSOLVER_H
+#endif // XPPSOLVERSETTINGS_H
 

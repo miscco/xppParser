@@ -13,8 +13,8 @@ HEADERS +=	parser/keywordTrie.hpp \
 			parser/xppParserException.h \
 			xppColor.h \
 			xppMainSettings.h \
-			xppSolver.h \
-    xppAutoSettings.h
+    xppAutoSettings.h \
+    xppSolverSettings.h
 
 SOURCES +=	main.cpp \
 			parser/xppEvaluator.cpp \
