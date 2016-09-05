@@ -206,8 +206,7 @@ void xppEvaluator::replaceFunExpression(const keywordTrie::trie &trie,
         stringList args = getFunctionArgs(expr, ln, pos);
         std::string temp = parser.Functions.at(res.id).Expr;
         for (const keywordTrie::result &res2 : funTable.at(res.id)) {
-            temp.replace(res2.start, res2.keyword.size(),
-                         args.at(res2.id));
+            temp.replace(res2.start, res2.keyword.size(), args.at(res2.id));
         }
         expr.replace(res.start, res.keyword.size()+pos, temp);
     }
