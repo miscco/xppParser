@@ -5,27 +5,13 @@
 #include <vector>
 
 #include "xppColor.h"
-#include "xppSolverSettings.h"
-#include "parser/xppParser.h"
-
 
 class xppMainSettings {
 public:
     /**
-     * @brief xppMainSettings Default constructor taking the parsed information.
-     * @param parser The parser object containing the non default options.
+     * @brief xppMainSettings Default constructor.
      */
-    xppMainSettings(const xppParser &parser) {setOptions(parser.Options);}
-
-    /**
-     * @brief setOptions Setter of the non default options defined in optsArray.
-     * @param options The opts array containing the parsed information.
-     */
-    void setOptions (const optsArray &options) {
-        for (const opts &opt : options) {
-            setOption(opt.Name, opt.Expr);
-        }
-    }
+    xppMainSettings() {}
 
     /**
      * @brief setOption sets option given by key.

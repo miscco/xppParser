@@ -1,8 +1,8 @@
 #include <iostream>
 #include <string>
 
-#include "xppEvaluator.h"
-#include "xppParser.h"
+#include "parser/xppEvaluator.h"
+#include "parser/xppParser.h"
 
 int main(int argc, char** argv)
 {
