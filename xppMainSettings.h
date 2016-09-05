@@ -11,34 +11,34 @@
 
 class xppMainSettings {
 public:
-	xppMainSettings(const xppParser &parser);
+    xppMainSettings(const xppParser &parser);
 
-	void setOption (const std::string &key, const std::string &value);
-	template<typename T>
-	T getOption (const std::string &key) const;
+    void setOption (const std::string &key, const std::string &value);
+    template<typename T>
+    T getOption (const std::string &key) const;
 
 private:
-	bool quietMode	= false;
-	bool useGradient= false;
-	bool runNow		= false;
-	bool simPlot	= false;
-	bool is3D		= false;
+    bool quietMode	= false;
+    bool useGradient= false;
+    bool runNow		= false;
+    bool simPlot	= false;
+    bool is3D		= false;
 
-	int seedRNG		= 0;
-	int	numPlots	= 1;
-	int numJump		= 1;
-	int numMesh		= 40;
-	int gridDF		= 10;
+    int seedRNG		= 0;
+    int	numPlots	= 1;
+    int numJump		= 1;
+    int numMesh		= 40;
+    int gridDF		= 10;
 
-	double	tStart	= 0.0;
-	double	trans	= 0.0;
+    double	tStart	= 0.0;
+    double	trans	= 0.0;
 
-	std::string	logFile		= "";
-	std::string outputFile  = "";
+    std::string	logFile		= "";
+    std::string outputFile  = "";
 
-	xppMainColor color = xppMainColor();
+    xppMainColor color = xppMainColor();
 
-	void setOptions		(const optsArray &options);
+    void setOptions		(const optsArray &options);
 };
 
 #endif // XPPMAINSETTINGS_H
