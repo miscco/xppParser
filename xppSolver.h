@@ -39,7 +39,7 @@ public:
     /**
      * @brief xppSolverSettings::setOption sets option given by key.
      * @param key The string identifying the option to be set.
-     * @param value The value option "key" is set to.
+     * @param value The new value of the option identified by key.
      */
     void setOption (const std::string &key, const std::string &value) {
         try {
@@ -72,6 +72,7 @@ public:
     /**
      * @brief xppSolverSettings::getOption return the value of given option.
      * @param key The string identifying the option to be returned.
+     * @return The value of the option identified by key.
      */
     template<typename T>
     T getOption (const std::string &key) const {
@@ -98,7 +99,16 @@ public:
         }
     }
 
+    /**
+     * @brief setMethod Sets the solver method to meth.
+     * @param meth The new solver method.
+     */
     void setMethod (const xppMethod &meth) {method = meth;}
+
+    /**
+     * @brief getMethod getter for the solver method.
+     * @return The current sovler method.
+     */
     xppMethod getMethod (void) const {return method;}
 
 private:

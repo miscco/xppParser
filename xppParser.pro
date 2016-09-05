@@ -18,8 +18,7 @@ HEADERS +=	parser/keywordTrie.hpp \
 
 SOURCES +=	main.cpp \
 			parser/xppEvaluator.cpp \
-			parser/xppParser.cpp \
-			xppMainSettings.cpp
+			parser/xppParser.cpp
 
 INCLUDEPATH += parser
 
