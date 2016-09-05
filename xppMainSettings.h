@@ -58,6 +58,16 @@ public:
                 trans = std::stod(value.c_str());
             } else if (key == "T0") {
                 tStart = std::stod(value.c_str());
+            } else if (key == "SMC") {
+                color.stableManifoldColor = std::stoi(value.c_str());
+            } else if (key == "UMC") {
+                color.unstableManifoldColor = std::stoi(value.c_str());
+            } else if (key == "XNC") {
+                color.xNullclineColor = std::stoi(value.c_str());
+            } else if (key == "YNC") {
+                color.xNullclineColor = std::stoi(value.c_str());
+            } else if (key == "COLORMAP") {
+                color.colorMap = std::stoi(value.c_str());
             }
         } catch (const std::invalid_argument& ia) {
             std::cerr << "Invalid argument: " << ia.what() << '\n';
@@ -95,6 +105,16 @@ public:
             return trans;
         } else if (key == "T0") {
             return tStart;
+        } else if (key == "SMC") {
+            return color.stableManifoldColor;
+        } else if (key == "UMC") {
+            return color.unstableManifoldColor;
+        } else if (key == "XNC") {
+            return color.xNullclineColor;
+        } else if (key == "YNC") {
+            return color.xNullclineColor;
+        } else if (key == "COLORMAP") {
+            return color.colorMap;
         }
     }
 

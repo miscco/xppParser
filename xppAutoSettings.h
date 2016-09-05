@@ -74,6 +74,14 @@ public:
                 NormMax = std::stod(value.c_str());
             } else if (key == "NORMIN") {
                 NormMin = std::stod(value.c_str());
+            } else if (key == "SEC") {
+                color.stableEquilibriumColor = std::stoi(value.c_str());
+            } else if (key == "UEC") {
+                color.unstableEquilibriumColor = std::stoi(value.c_str());
+            } else if (key == "SPC") {
+                color.stablePeriodicColor = std::stoi(value.c_str());
+            } else if (key == "UPC") {
+                color.unstablePeriodicColor = std::stoi(value.c_str());
             }
         } catch (const std::invalid_argument& ia) {
             std::cerr << "Invalid argument: " << ia.what() << '\n';
@@ -129,6 +137,14 @@ public:
             return NormMax;
         } else if (key == "NORMIN") {
             return NormMin;
+        } else if (key == "SEC") {
+            return color.stableEquilibriumColor;
+        } else if (key == "UEC") {
+            return color.unstableEquilibriumColor;
+        } else if (key == "SPC") {
+            return color.stablePeriodicColor;
+        } else if (key == "UPC") {
+            return color.unstablePeriodicColor;
         }
     }
 private:

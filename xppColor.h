@@ -64,11 +64,6 @@ struct xppAutoColor {
     xppColor unstableEquilibriumColor = BLACK;
     xppColor stablePeriodicColor	  = GREEN;
     xppColor unstablePeriodicColor	  = BLUE;
-
-    /**
-     * @brief colorMap the utilized color map
-     */
-    xppColorMap colorMap = C_NORM;
 };
 
 #endif // XPPCOLOR_H
