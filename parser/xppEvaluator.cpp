@@ -117,7 +117,7 @@ std::string xppEvaluator::getNextOperand(const std::string &expr,
  * @par arrays: An array of optsArrays containing the parsed expressions.
  */
 void xppEvaluator::replaceConstants(std::vector<optsArray*> &arrays) {
-    for (size_t i=0; i < 2; ++i) {
+    for (size_t i=0; i < 3; ++i) {
         optsArray *source = arrays.at(0);
         arrays.erase(arrays.begin());
         keywordTrie::trie trie = createTrie(source);
