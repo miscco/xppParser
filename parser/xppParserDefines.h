@@ -13,7 +13,8 @@ struct opts {
 	std::string					Expr;
 	std::vector<std::string>	Args;
 
-	explicit opts () {}
+    explicit opts () {}
+    explicit opts (const unsigned line) : Line(line) {}
 	explicit opts (const opts &opt)
 		: Line(opt.Line), Name(opt.Name), Expr(opt.Expr), Args(opt.Args) {}
 };

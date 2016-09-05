@@ -226,11 +226,11 @@ void xppParser::expandArrays() {
 				while (true) {
 					size_t endArray = line2->first.find("%");
 					if (endArray != std::string::npos) {
-						line2++;
+                        ++line2;
 						break;
 					}
 					arrayExpressions.push_back(*line2);
-					line2++;
+                    ++line2;
 				}
 			} else {
 				arrayExpressions.push_back(*line);
@@ -319,8 +319,7 @@ void xppParser::extractDefinition(void) {
 		auto res = keywordSearch(key, line->first.at(pos2));
 
 		while (pos2 != std::string::npos) {
-			opts opt;
-			opt.Line = line->second;
+            opts opt(line->second);
 
 			switch (res.id) {
 			case 0: /* !Name */
@@ -480,8 +479,7 @@ void xppParser::extractExport(void) {
 		std::size_t pos1 = line->first.find("export");
 		std::size_t pos2 = line->first.find(" ", pos1);
 		if (pos1 != std::string::npos) {
-			opts opt;
-			opt.Line = line->second;
+            opts opt(line->second);
 			opt.Args = getList(getNextWord(*line, pos1, pos2), opt.Line, "}", ",");;
 			opt.Expr = std::to_string(opt.Args.size());
 
@@ -507,8 +505,7 @@ void xppParser::extractGlobal(void) {
 		std::size_t pos1 = line->first.find("global");
 		std::size_t pos2 = line->first.find(" ", pos1);
 		if (pos1 != std::string::npos) {
-			opts opt;
-			opt.Line = line->second;
+            opts opt(line->second);
 
 			/* Parse the sign flag. For simplicity store it in the name slot */
 			opt.Name = getNextWord(*line, pos1, pos2);
@@ -540,8 +537,7 @@ void xppParser::extractMarkov(void) {
 		std::size_t pos1 = line->first.find("markov");
 		std::size_t pos2 = line->first.find(" ", pos1);
 		if (pos1 != std::string::npos) {
-			opts opt;
-			opt.Line = line->second;
+            opts opt(line->second);
 
 			opt.Name = getNextWord(*line, pos1, pos2);
 			checkName(opt.Name, *line, pos1);
@@ -595,8 +591,8 @@ void xppParser::extractTable(void) {
 		std::size_t pos1 = line->first.find("table");
 		std::size_t pos2 = line->first.find(" ", pos1);
 		if (pos1 != std::string::npos) {
-			opts opt;
-			opt.Line = line->second;
+            opts opt(line->second);
+
 			unsigned npoints;
 			double xLow, xHigh;
 
@@ -661,7 +657,7 @@ void xppParser::extractTable(void) {
 				/* Get the number of points */
 				try {
 					getline(fileStream, temp.first);
-					temp.second++;
+                    ++temp.second;
 					npoints = std::stoi(temp.first);
 				} catch (std::invalid_argument) {
 					throw xppParserException(EXPECTED_NUMBER, temp, pos1);
@@ -669,7 +665,7 @@ void xppParser::extractTable(void) {
 
 				/* Get the bounds */
 				getline(fileStream, temp.first);
-				temp.second++;
+                ++temp.second;
 				parser.SetExpr(temp.first);
 				try {
 					xLow = parser.Eval().GetFloat();
@@ -677,7 +673,7 @@ void xppParser::extractTable(void) {
 					throw xppParserException(EXPECTED_NUMBER, temp, pos1);
 				}
 				getline(fileStream, temp.first);
-				temp.second++;
+                ++temp.second;
 				parser.SetExpr(temp.first);
 				try {
 					xHigh = parser.Eval().GetFloat();
@@ -690,7 +686,7 @@ void xppParser::extractTable(void) {
 					opt.Args.reserve(npoints);
 					for(unsigned j = 0; j < npoints; j++) {
 						if (getline(fileStream, temp.first)) {
-							temp.second++;
+                            ++temp.second;
 							parser.SetExpr(temp.first);
 							opt.Args.push_back(parser.Eval().ToString());
 						} else {
@@ -893,7 +889,7 @@ void xppParser::readFile(void) {
 		size_t pos1 = temp.find_first_not_of(" \t\f\v\r\n");
 		if (temp == "done") {
 			break;
-		} else if (temp.length() != 0 && pos1 != std::string::npos) {
+        } else if (!temp.empty() && pos1 != std::string::npos) {
 			/* Remove trailing and superflous whitespaces */
 			temp.erase(0, pos1);
 			temp.resize(temp.find_last_not_of(" \t\f\v\r\n")+1);
@@ -903,7 +899,7 @@ void xppParser::readFile(void) {
 			temp.erase(last, temp.end());
 			lines.push_back(std::make_pair(temp, lineCount));
 		}
-		lineCount++;
+        ++lineCount;
 	}
 
 	if (lines.size() == 0) {
@@ -1007,7 +1003,7 @@ keywordTrie::result xppParser::keywordSearch(const std::string &expr,
 				res.id == 2 || /* Name' */
 				res.id == 3 || /* dName/dt */
 				res.id == 9) { /* Name(Args) */
-				it++;
+                ++it;
 			} else if (res.id == 1 || /* Name(t) */
 					   res.id == 4 || /* Name(t+1) */
 					   res.id == 11) {  /* Name(0) */

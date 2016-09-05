@@ -1,5 +1,5 @@
-#ifndef PARSER_H
-#define PARSER_H
+#ifndef XPPPARSER_H
+#define XPPPARSER_H
 #include <iostream>
 #include <algorithm>
 #include <fstream>
@@ -95,4 +95,4 @@ private:
 	friend class xppMainSettings;
 };
 
-#endif // PARSER_H
+#endif // XPPPARSER_H

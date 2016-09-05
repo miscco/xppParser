@@ -32,10 +32,10 @@ private:
 	std::string		getNextOperand		(const std::string &expr,
 										 size_t &pos1,
 										 size_t &pos2);
-	void			replaceExpression	(keywordTrie::trie &trie,
+    void			replaceExpression	(const keywordTrie::trie &trie,
 										 const optsArray *source,
 										 std::string &expr);
-	void			replaceFunExpression(keywordTrie::trie &trie,
+    void			replaceFunExpression(const keywordTrie::trie &trie,
 										 const keywordTrie::resultTable &funTable,
 										 std::string &expr,
 										 const size_t &ln);

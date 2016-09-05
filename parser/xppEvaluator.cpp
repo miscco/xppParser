@@ -87,7 +87,7 @@ stringList xppEvaluator::getFunctionArgs (const std::string &str,
 		if (parser.usedNames.parseText(args.back()).empty()) {
 			throw xppParserException(UNKNOWN_NAME, std::make_pair(str, ln), pos1);
 		}
-	}
+    }
 	start = end+2-start;
 	return args;
 }
@@ -117,7 +117,7 @@ std::string xppEvaluator::getNextOperand(const std::string &expr,
  * @par arrays: An array of optsArrays containing the parsed expressions.
  */
 void xppEvaluator::replaceConstants(std::vector<optsArray*> &arrays) {
-	for (size_t i=0; i < 2; i++) {
+    for (size_t i=0; i < 2; ++i) {
 		optsArray *source = arrays.at(0);
 		arrays.erase(arrays.begin());
 		keywordTrie::trie trie = createTrie(source);
@@ -145,7 +145,7 @@ void xppEvaluator::replaceConstants(std::vector<optsArray*> &arrays) {
  * @par source: The array containing the replacements.
  * @par str: The string that should be searched.
  */
-void xppEvaluator::replaceExpression(keywordTrie::trie &trie,
+void xppEvaluator::replaceExpression(const keywordTrie::trie &trie,
 									 const optsArray *source,
 									 std::string &expr) {
 	keywordTrie::resultCollection results = trie.parseText(expr);
@@ -192,7 +192,7 @@ void xppEvaluator::replaceFunctions(std::vector<optsArray*> &arrays) {
  * @par str: The string that should be searched.
  * @par ln: The line number for error throws.
  */
-void xppEvaluator::replaceFunExpression(keywordTrie::trie &trie,
+void xppEvaluator::replaceFunExpression(const keywordTrie::trie &trie,
 										const keywordTrie::resultTable &funTable,
 										std::string &expr,
 										const size_t &ln) {
