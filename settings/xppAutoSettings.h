@@ -63,16 +63,16 @@ public:
             } else if (key == "NORMIN") {
                 NormMin = std::stod(value.c_str());
             } else if (key == "SEC") {
-                color.stableEquilibriumColor = std::stoi(value.c_str());
+                color.stableEquilibriumColor = (xppColor) std::stoi(value.c_str());
             } else if (key == "UEC") {
-                color.unstableEquilibriumColor = std::stoi(value.c_str());
+                color.unstableEquilibriumColor = (xppColor)  std::stoi(value.c_str());
             } else if (key == "SPC") {
-                color.stablePeriodicColor = std::stoi(value.c_str());
+                color.stablePeriodicColor = (xppColor)  std::stoi(value.c_str());
             } else if (key == "UPC") {
-                color.unstablePeriodicColor = std::stoi(value.c_str());
+                color.unstablePeriodicColor = (xppColor) std::stoi(value.c_str());
             }
         } catch (const std::invalid_argument& ia) {
-            std::cerr << "Invalid argument: " << ia.what() << '\n';
+            //std::cerr << "Invalid argument: " << ia.what() << '\n';
         }
     }
 
@@ -163,6 +163,8 @@ private:
     double	NormMin	= 0.0;
 
     xppAutoColor color = xppAutoColor();
+
+    friend class xppSettings;
 };
 
 #endif // XPPAUTOSETTINGS_H

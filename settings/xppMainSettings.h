@@ -45,18 +45,18 @@ public:
             } else if (key == "T0") {
                 tStart = std::stod(value.c_str());
             } else if (key == "SMC") {
-                color.stableManifoldColor = std::stoi(value.c_str());
+                color.stableManifoldColor = (xppColor) std::stoi(value.c_str());
             } else if (key == "UMC") {
-                color.unstableManifoldColor = std::stoi(value.c_str());
+                color.unstableManifoldColor = (xppColor) std::stoi(value.c_str());
             } else if (key == "XNC") {
-                color.xNullclineColor = std::stoi(value.c_str());
+                color.xNullclineColor = (xppColor) std::stoi(value.c_str());
             } else if (key == "YNC") {
-                color.xNullclineColor = std::stoi(value.c_str());
+                color.xNullclineColor = (xppColor) std::stoi(value.c_str());
             } else if (key == "COLORMAP") {
-                color.colorMap = std::stoi(value.c_str());
+                color.colorMap = (xppColorMap) std::stoi(value.c_str());
             }
         } catch (const std::invalid_argument& ia) {
-            std::cerr << "Invalid argument: " << ia.what() << '\n';
+            //std::cerr << "Invalid argument: " << ia.what() << '\n';
         }
     }
 
@@ -111,11 +111,11 @@ private:
     bool simPlot	= false;
     bool is3D		= false;
 
-    int seedRNG		= 0;
-    int	numPlots	= 1;
-    int numJump		= 1;
-    int numMesh		= 40;
-    int gridDF		= 10;
+    unsigned seedRNG= 0;
+    unsigned numPlots= 1;
+    unsigned numJump= 1;
+    unsigned numMesh= 40;
+    unsigned gridDF	= 10;
 
     double	tStart	= 0.0;
     double	trans	= 0.0;
@@ -124,6 +124,7 @@ private:
     std::string outputFile  = "";
 
     xppMainColor color = xppMainColor();
+    friend class xppSettings;
 };
 
 #endif // XPPMAINSETTINGS_H

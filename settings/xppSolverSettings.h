@@ -112,23 +112,24 @@ public:
     xppMethod getMethod (void) const {return method;}
 
 private:
-    double	JAC_EPS		= 1E-5;
-    int		BANDUP		= 100;
-    int		BANDLO		= 10;
-    double	NEWT_TOL	= 1E-5;
-    double	NEWT_ITER	= 1E-5;
+    double   JAC_EPS	= 1E-5;
+    unsigned BANDUP		= 100;
+    unsigned BANDLO		= 10;
+    double	 NEWT_TOL	= 1E-5;
+    double	 NEWT_ITER	= 1E-5;
 
-    double	ATOLER		= 1E-5;
-    double	TOLER		= 1E-5;
+    double	 ATOLER		= 1E-5;
+    double	 TOLER		= 1E-5;
 
-    int		maxPoints   = 4000;
-    double	maxDelay	= 0.0;
+    unsigned maxPoints   = 4000;
+    double	 maxDelay	= 0.0;
 
-    double	dt			= 0.05;
-    double	dtMax		= 20.0;
-    double	dtMin		= 0.0;
+    double	 dt			= 0.05;
+    double	 dtMax		= 20.0;
+    double	 dtMin		= 0.0;
 
     xppMethod method	= METHOD_RK4;
+    friend class xppSettings;
 
 };
 

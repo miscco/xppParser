@@ -7,18 +7,20 @@ CONFIG -= qt
 include(parser/muparserx/muparserx.pri)
 
 HEADERS +=	parser/keywordTrie.hpp \
-			parser/xppEvaluator.h \
-			parser/xppParser.h \
-			parser/xppParserDefines.h \
-			parser/xppParserException.h \
-			settings/xppAutoSettings.h \
-			settings/xppMainSettings.h \
-			settings/xppSolverSettings.h \
-			xppColor.h
+		parser/xppEvaluator.h \
+		parser/xppParser.h \
+		parser/xppParserDefines.h \
+		parser/xppParserException.h \
+		settings/xppAutoSettings.h \
+		settings/xppMainSettings.h \
+		settings/xppSolverSettings.h \
+		xppColor.h \
+    settings/xppSettings.h
 
 SOURCES +=	main.cpp \
-			parser/xppEvaluator.cpp \
-			parser/xppParser.cpp
+		parser/xppEvaluator.cpp \
+		parser/xppParser.cpp \
+    settings/xppSettings.cpp
 
 PRECOMPILED_HEADER +=
 
