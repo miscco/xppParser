@@ -15,6 +15,7 @@
 #include "keywordTrie.hpp"
 #include "xppParserDefines.h"
 #include "xppParserException.h"
+#include "settings/xppSolverSettings.h"
 
 class xppParser {
 public:
@@ -48,6 +49,8 @@ private:
                              const std::string &closure, const std::string &delim);
     std::string getNextExpr (const lineNumber &line, size_t &pos1,size_t &pos2);
     std::string getNextWord (const lineNumber &line, size_t &pos1,size_t &pos2);
+
+    xppMethod setMethod     (const std::string& key);
 
     bool isNumeric			(const std::string &str);
 

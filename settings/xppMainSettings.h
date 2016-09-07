@@ -27,6 +27,7 @@ private:
     unsigned maxStore = 5000;
 
     double	tStart	= 0.0;
+    double  tEnd    = 20.0;
     double	trans	= 0.0;
 
     std::string	logFile		= "";

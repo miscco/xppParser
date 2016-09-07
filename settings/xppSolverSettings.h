@@ -55,7 +55,6 @@ private:
 
     xppMethod method	= METHOD_RK4;
     friend class xppSettings;
-
 };
 
 #endif // XPPSOLVERSETTINGS_H

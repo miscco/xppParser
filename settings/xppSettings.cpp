@@ -29,10 +29,10 @@ xppSettings::xppSettings(const optsArray &options)
     uintMap.insert(uPair("XNC", (unsigned*)&mainSettings.color.xNullclineColor));
     uintMap.insert(uPair("YNC", (unsigned*)&mainSettings.color.yNullclineColor));
 
-    uintMap.insert(uPair("VMAXPTS",  &solverSettings.maxPoints));
+    uintMap.insert(uPair("VMAXPTS", &solverSettings.maxPoints));
     uintMap.insert(uPair("BANDUP",  &solverSettings.BANDUP));
     uintMap.insert(uPair("BANDLO",  &solverSettings.BANDLO));
-    uintMap.insert(uPair("METHOD",  (unsigned*)&solverSettings.method));
+    uintMap.insert(uPair("METH",    (unsigned*)&solverSettings.method));
 
     doubleMap.insert(dPair("EPSL",  &autoSettings.EPSL));
     doubleMap.insert(dPair("EPSU",  &autoSettings.EPSU));
@@ -53,6 +53,7 @@ xppSettings::xppSettings(const optsArray &options)
 
     doubleMap.insert(dPair("TRANS", &mainSettings.trans));
     doubleMap.insert(dPair("T0",    &mainSettings.tStart));
+    doubleMap.insert(dPair("TOTAL", &mainSettings.tEnd));
 
     doubleMap.insert(dPair("JAC_EPS",   &solverSettings.JAC_EPS));
     doubleMap.insert(dPair("NEWT_TOL",  &solverSettings.NEWT_TOL));
