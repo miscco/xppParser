@@ -8,6 +8,7 @@
 #include "settings/xppAutoSettings.h"
 #include "settings/xppMainSettings.h"
 #include "settings/xppSolverSettings.h"
+#include "xppColor.h"
 
 class xppSettings
 {

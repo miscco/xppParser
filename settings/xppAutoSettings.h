@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "xppColor.h"
+#include "xppPlots.h"
 
 class xppAutoSettings {
 public:
@@ -35,17 +36,13 @@ private:
     double  DsMax   = 0.5;
     double  DsMin   = 1E-5;
 
-    double  xMax    = 5.;
-    double  xMin    =-5.;
-    double  yMax    = 5.;
-    double  yMin    =-5.;
-
     double  ParMax  = 10.0;
     double  ParMin  = 0.0;
     double  NormMax = 1000.0;
     double  NormMin = 0.0;
 
     xppAutoColor color = xppAutoColor();
+    xppPlotAxes  axes  = xppPlotAxes();
 
     friend class xppSettings;
 };

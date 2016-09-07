@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "xppColor.h"
+#include "xppPlots.h"
 
 class xppMainSettings {
 public:
@@ -26,11 +27,6 @@ private:
     unsigned gridDF	= 10;
     unsigned maxStore = 5000;
 
-    double  xMax    = 0.;
-    double  xMin    = 20.;
-    double  yMax    = 2.;
-    double  yMin    =-2.;
-
     double	tStart	= 0.0;
     double  tEnd    = 20.0;
     double	trans	= 0.0;
@@ -41,6 +37,7 @@ private:
     std::string outputFile  = "";
 
     xppMainColor color = xppMainColor();
+    std::vector<xppPlotAxes>  axes  = {xppPlotAxes()};
     friend class xppSettings;
 };
 

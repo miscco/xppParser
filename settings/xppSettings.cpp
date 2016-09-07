@@ -102,13 +102,13 @@ void xppSettings::initializeOptions(const optsArray& options) {
         } else if (opt.Name == "NORMMIN") {
             autoSettings.NormMin = std::stod(opt.Expr);
         } else if (opt.Name == "AUTOXMAX") {
-            autoSettings.xMax = std::stod(opt.Expr);
+            autoSettings.axes.xMax = std::stod(opt.Expr);
         } else if (opt.Name == "AUTOXMIN") {
-            autoSettings.xMin = std::stod(opt.Expr);
+            autoSettings.axes.xMin = std::stod(opt.Expr);
         } else if (opt.Name == "AUTOYMAX") {
-            autoSettings.yMax = std::stod(opt.Expr);
+            autoSettings.axes.yMax = std::stod(opt.Expr);
         } else if (opt.Name == "AUTOYMIN") {
-            autoSettings.yMin = std::stod(opt.Expr);
+            autoSettings.axes.yMin = std::stod(opt.Expr);
         } else if (opt.Name == "TRANS") {
             mainSettings.trans = std::stod(opt.Expr);
         } else if (opt.Name == "T0") {
@@ -118,13 +118,13 @@ void xppSettings::initializeOptions(const optsArray& options) {
         } else if (opt.Name == "BOUND") {
             mainSettings.bound = std::stod(opt.Expr);
         } else if (opt.Name == "XHI") {
-            mainSettings.xMax = std::stod(opt.Expr);
+            mainSettings.axes.at(0).xMax = std::stod(opt.Expr);
         } else if (opt.Name == "XLO") {
-            mainSettings.xMin = std::stod(opt.Expr);
+            mainSettings.axes.at(0).xMin = std::stod(opt.Expr);
         } else if (opt.Name == "YHI") {
-            mainSettings.yMax = std::stod(opt.Expr);
+            mainSettings.axes.at(0).yMax = std::stod(opt.Expr);
         } else if (opt.Name == "YLO") {
-            mainSettings.yMin = std::stod(opt.Expr);
+            mainSettings.axes.at(0).yMin = std::stod(opt.Expr);
         } else if (opt.Name == "JAC_EPS") {
             solverSettings.JAC_EPS = std::stod(opt.Expr);
         } else if (opt.Name == "NEWT_TOL") {
