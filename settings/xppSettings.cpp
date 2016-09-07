@@ -50,10 +50,19 @@ xppSettings::xppSettings(const optsArray &options)
     doubleMap.insert(dPair("PARMIN",&autoSettings.ParMin));
     doubleMap.insert(dPair("NORMMAX",&autoSettings.NormMax));
     doubleMap.insert(dPair("NORMMIN",&autoSettings.NormMin));
+    doubleMap.insert(dPair("AUTOXMAX",&autoSettings.xMax));
+    doubleMap.insert(dPair("AUTOXMIN",&autoSettings.xMin));
+    doubleMap.insert(dPair("AUTOYMAX",&autoSettings.yMax));
+    doubleMap.insert(dPair("AUTOYMIN",&autoSettings.yMin));
 
     doubleMap.insert(dPair("TRANS", &mainSettings.trans));
     doubleMap.insert(dPair("T0",    &mainSettings.tStart));
     doubleMap.insert(dPair("TOTAL", &mainSettings.tEnd));
+    doubleMap.insert(dPair("BOUND", &mainSettings.bound));
+    doubleMap.insert(dPair("XHI",   &mainSettings.xMax));
+    doubleMap.insert(dPair("XLO",   &mainSettings.xMin));
+    doubleMap.insert(dPair("YHI",   &mainSettings.yMax));
+    doubleMap.insert(dPair("YLO",   &mainSettings.yMin));
 
     doubleMap.insert(dPair("JAC_EPS",   &solverSettings.JAC_EPS));
     doubleMap.insert(dPair("NEWT_TOL",  &solverSettings.NEWT_TOL));
@@ -103,7 +112,6 @@ void xppSettings::setOption(const opts &opt) {
     } else if (stringMap.find(opt.Name) != stringMap.end()) {
         *stringMap.at(opt.Name) = opt.Expr;
     } else {
-        std::cout << "Name: " << opt.Name << std::endl;
         throw std::runtime_error("Unknown option\n");
     }
 }

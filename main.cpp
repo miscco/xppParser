@@ -15,7 +15,7 @@ int main(int argc, char** argv)
     }
     xppParser parseOde(filename);
 
-    xppSettings(parseOde.getOptions());
+    xppSettings settings(parseOde.getOptions());
 
     xppEvaluator evaluateOde(parseOde);
 

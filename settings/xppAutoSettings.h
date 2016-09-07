@@ -35,6 +35,11 @@ private:
     double  DsMax	= 0.5;
     double	DsMin	= 1E-5;
 
+    double  xMax    = 5.;
+    double  xMin    =-5.;
+    double  yMax    = 5.;
+    double  yMin    =-5.;
+
     double  ParMax	= 10.0;
     double	ParMin	= 0.0;
     double  NormMax	= 1000.0;
