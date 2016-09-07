@@ -14,9 +14,8 @@ class xppSettings
 public:
     xppSettings(const optsArray& options);
 
-    void initializeOptions(const optsArray& options);
-
 private:
+    void initializeOptions(const optsArray& options);
     xppAutoSettings   autoSettings;
     xppMainSettings   mainSettings;
     xppSolverSettings solverSettings;
