@@ -387,8 +387,6 @@ void xppParser::extractDefinition(void) {
                 if (!isNumeric(opt.Expr)) {
                     throw xppParserException(EXPECTED_NUMBER, *line, pos1);
                 }
-            } else if (res.id ==17 && opt.Name == "METH") {
-                opt.Expr = std::to_string(setMethod(opt.Expr));
                 /* Check if all function arguments are used */
             } else if (res.id == 9) {
                 size_t pos3 = opt.Name.length()+1;
@@ -1029,49 +1027,6 @@ keywordTrie::result xppParser::keywordSearch(const std::string &expr,
         }
     }
     return results.front();
-}
-
-/**
- * @brief xppParser::setMethod Translate the string key into a xppMethod enum.
- * @param key The option expression containing the key.
- * @return The xppMethod of the solver method.
- */
-xppMethod xppParser::setMethod(const std::string& key) {
-    xppMethod method = METHOD_DISCRETE;
-    if (key == "discrete") {
-        method = METHOD_DISCRETE;
-    } else if (key == "euler") {
-        method = METHOD_EULER;
-    } else if (key == "modeuler") {
-        method = METHOD_MODEULER;
-    } else if (key == "rungekutta") {
-        method = METHOD_RK4;
-    } else if (key == "adams") {
-        method = METHOD_ADAMS;
-    } else if (key == "gear") {
-        method = METHOD_GEAR;
-    } else if (key == "volterra") {
-        method = METHOD_VOLTERRA;
-    } else if (key == "backeul") {
-        method = METHOD_BACKEUL;
-    } else if (key == "qualrk") {
-        method = METHOD_RKQS;
-    } else if (key == "stiff") {
-        method = METHOD_STIFF;
-    } else if (key == "cvode") {
-        method = METHOD_CVODE;
-    } else if (key == "5dp") {
-        method = METHOD_DP5;
-    } else if (key == "83dp") {
-        method = METHOD_DP83;
-    } else if (key == "2rb") {
-        method = METHOD_RB23;
-    } else if (key == "symp") {
-        method = METHOD_SYMPLECT;
-    } else {
-        throw std::runtime_error("Unknown solver method!\n");
-    }
-    return method;
 }
 
 /**

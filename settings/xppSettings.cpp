@@ -14,101 +14,180 @@ xppSettings::xppSettings(const optsArray &options)
  * @param options Parsed information from the ode file about nondefault settings.
  */
 void xppSettings::initializeOptions(const optsArray& options) {
-    typedef std::pair<std::string, bool*>        bPair;
-    typedef std::pair<std::string, double*>      dPair;
-    typedef std::pair<std::string, std::string*> sPair;
-    typedef std::pair<std::string, unsigned*>    uPair;
-
-    std::map<std::string, bool*>        boolMap;
-    std::map<std::string, double*>      doubleMap;
-    std::map<std::string, std::string*> stringMap;
-    std::map<std::string, unsigned*>    uintMap;
-
-    boolMap.insert(bPair("QUIET",   &mainSettings.quietMode));
-    boolMap.insert(bPair("GRADS",   &mainSettings.useGradient));
-    boolMap.insert(bPair("RUNNOW",  &mainSettings.runNow));
-    boolMap.insert(bPair("SIMPLOT", &mainSettings.simPlot));
-    boolMap.insert(bPair("AXES",    &mainSettings.is3D));
-
-    uintMap.insert(uPair("NTST",    &autoSettings.Ntst));
-    uintMap.insert(uPair("NMAX",    &autoSettings.Nmax));
-    uintMap.insert(uPair("NPR",     &autoSettings.NPr));
-    uintMap.insert(uPair("NCOL",    &autoSettings.NCol));
-
-    uintMap.insert(uPair("SEED",    &mainSettings.seedRNG));
-    uintMap.insert(uPair("NPLOT",   &mainSettings.numPlots));
-    uintMap.insert(uPair("NJMP",    &mainSettings.numJump));
-    uintMap.insert(uPair("NMESH",   &mainSettings.numMesh));
-    uintMap.insert(uPair("DFGRID",  &mainSettings.gridDF));
-    uintMap.insert(uPair("SEED",    &mainSettings.seedRNG));
-    uintMap.insert(uPair("MAXSTOR", &mainSettings.maxStore));
-
-    uintMap.insert(uPair("VMAXPTS", &solverSettings.maxPoints));
-    uintMap.insert(uPair("BANDUP",  &solverSettings.BANDUP));
-    uintMap.insert(uPair("BANDLO",  &solverSettings.BANDLO));
-
-    uintMap.insert(uPair("SEC", (unsigned*)&autoSettings.color.stableEquilibriumColor));
-    uintMap.insert(uPair("SPC", (unsigned*)&autoSettings.color.stablePeriodicColor));
-    uintMap.insert(uPair("SMC", (unsigned*)&mainSettings.color.stableManifoldColor));
-    uintMap.insert(uPair("UEC", (unsigned*)&autoSettings.color.unstableEquilibriumColor));
-    uintMap.insert(uPair("UPC", (unsigned*)&autoSettings.color.unstablePeriodicColor));
-    uintMap.insert(uPair("UMC", (unsigned*)&mainSettings.color.unstableManifoldColor));
-    uintMap.insert(uPair("XNC", (unsigned*)&mainSettings.color.xNullclineColor));
-    uintMap.insert(uPair("YNC", (unsigned*)&mainSettings.color.yNullclineColor));
-    uintMap.insert(uPair("METH",(unsigned*)&solverSettings.method));
-
-    doubleMap.insert(dPair("EPSL",      &autoSettings.EPSL));
-    doubleMap.insert(dPair("EPSU",      &autoSettings.EPSU));
-    doubleMap.insert(dPair("EPSS",      &autoSettings.EPSS));
-    doubleMap.insert(dPair("IAD",       &autoSettings.IAD));
-    doubleMap.insert(dPair("MXBF",      &autoSettings.MXBF));
-    doubleMap.insert(dPair("IID",       &autoSettings.IID));
-    doubleMap.insert(dPair("ITMX",      &autoSettings.ITMX));
-    doubleMap.insert(dPair("ITNW",      &autoSettings.ITNW));
-    doubleMap.insert(dPair("IADS",      &autoSettings.IADS));
-    doubleMap.insert(dPair("DS",        &autoSettings.Ds));
-    doubleMap.insert(dPair("DSMAX",     &autoSettings.DsMax));
-    doubleMap.insert(dPair("DSMIN",     &autoSettings.DsMin));
-    doubleMap.insert(dPair("PARMAX",    &autoSettings.ParMax));
-    doubleMap.insert(dPair("PARMIN",    &autoSettings.ParMin));
-    doubleMap.insert(dPair("NORMMAX",   &autoSettings.NormMax));
-    doubleMap.insert(dPair("NORMMIN",   &autoSettings.NormMin));
-    doubleMap.insert(dPair("AUTOXMAX",  &autoSettings.xMax));
-    doubleMap.insert(dPair("AUTOXMIN",  &autoSettings.xMin));
-    doubleMap.insert(dPair("AUTOYMAX",  &autoSettings.yMax));
-    doubleMap.insert(dPair("AUTOYMIN",  &autoSettings.yMin));
-
-    doubleMap.insert(dPair("TRANS",     &mainSettings.trans));
-    doubleMap.insert(dPair("T0",        &mainSettings.tStart));
-    doubleMap.insert(dPair("TOTAL",     &mainSettings.tEnd));
-    doubleMap.insert(dPair("BOUND",     &mainSettings.bound));
-    doubleMap.insert(dPair("XHI",       &mainSettings.xMax));
-    doubleMap.insert(dPair("XLO",       &mainSettings.xMin));
-    doubleMap.insert(dPair("YHI",       &mainSettings.yMax));
-    doubleMap.insert(dPair("YLO",       &mainSettings.yMin));
-
-    doubleMap.insert(dPair("JAC_EPS",   &solverSettings.JAC_EPS));
-    doubleMap.insert(dPair("NEWT_TOL",  &solverSettings.NEWT_TOL));
-    doubleMap.insert(dPair("NEWT_ITER", &solverSettings.NEWT_ITER));
-    doubleMap.insert(dPair("DT",        &solverSettings.dt));
-    doubleMap.insert(dPair("DTMAX",     &solverSettings.dtMax));
-    doubleMap.insert(dPair("DTMIN",     &solverSettings.dtMin));
-    doubleMap.insert(dPair("DELAY",     &solverSettings.maxDelay));
-
-    stringMap.insert(sPair("LOGFILE",   &mainSettings.logFile));
-    stringMap.insert(sPair("OUTPUT",    &mainSettings.outputFile));
-
     for (const opts &opt : options) {
-        if (boolMap.find(opt.Name) != boolMap.end()) {
-            *boolMap.at(opt.Name) = (bool) std::stoi(opt.Expr);
-        } else if (doubleMap.find(opt.Name) != doubleMap.end()) {
-            *doubleMap.at(opt.Name) = std::stod(opt.Expr);
-        } else if (uintMap.find(opt.Name) != uintMap.end()) {
-            *uintMap.at(opt.Name) = (unsigned) std::stoi(opt.Expr);
-        } else if (stringMap.find(opt.Name) != stringMap.end()) {
-            *stringMap.at(opt.Name) = opt.Expr;
+        if (opt.Name == "QUIET") {
+            mainSettings.quietMode = (bool) std::stoi(opt.Expr);
+        } else if (opt.Name == "GRADS") {
+            mainSettings.useGradient = (bool) std::stoi(opt.Expr);
+        } else if (opt.Name == "RUNNOW") {
+            mainSettings.runNow = (bool) std::stoi(opt.Expr);
+        } else if (opt.Name == "SIMPLOT") {
+            mainSettings.simPlot = (bool) std::stoi(opt.Expr);
+        } else if (opt.Name == "AXES") {
+            mainSettings.is3D = (bool) std::stoi(opt.Expr);
+        } else if (opt.Name == "NTST") {
+            autoSettings.Ntst = std::stoi(opt.Expr);
+        } else if (opt.Name == "NMAX") {
+            autoSettings.Nmax = std::stoi(opt.Expr);
+        } else if (opt.Name == "NPR") {
+            autoSettings.NPr = std::stoi(opt.Expr);
+        } else if (opt.Name == "NCOL") {
+            autoSettings.NCol = std::stoi(opt.Expr);
+        } else if (opt.Name == "SEED") {
+            mainSettings.seedRNG = std::stoi(opt.Expr);
+        } else if (opt.Name == "NPLOT") {
+            mainSettings.numPlots = std::stoi(opt.Expr);
+        } else if (opt.Name == "NJMP") {
+            mainSettings.numJump = std::stoi(opt.Expr);
+        } else if (opt.Name == "NMESH") {
+            mainSettings.numMesh = std::stoi(opt.Expr);
+        } else if (opt.Name == "DFGRID") {
+            mainSettings.gridDF = std::stoi(opt.Expr);
+        } else if (opt.Name == "MAXSTOR") {
+            mainSettings.maxStore = std::stoi(opt.Expr);
+        } else if (opt.Name == "VMAXPTS") {
+            solverSettings.maxPoints = std::stoi(opt.Expr);
+        } else if (opt.Name == "BANDUP") {
+            solverSettings.BANDUP = std::stoi(opt.Expr);
+        } else if (opt.Name == "BANDLO") {
+            solverSettings.BANDLO = std::stoi(opt.Expr);
+        } else if (opt.Name == "SEC") {
+            autoSettings.color.stableEquilibriumColor = xppColor(std::stoi(opt.Expr));
+        } else if (opt.Name == "SPC") {
+            autoSettings.color.stablePeriodicColor = xppColor(std::stoi(opt.Expr));
+        } else if (opt.Name == "SMC") {
+            mainSettings.color.stableManifoldColor = xppColor(std::stoi(opt.Expr));
+        } else if (opt.Name == "UEC") {
+            autoSettings.color.unstableEquilibriumColor = xppColor(std::stoi(opt.Expr));
+        } else if (opt.Name == "UPC") {
+            autoSettings.color.unstablePeriodicColor = xppColor(std::stoi(opt.Expr));
+        } else if (opt.Name == "UMC") {
+            mainSettings.color.unstableManifoldColor = xppColor(std::stoi(opt.Expr));
+        } else if (opt.Name == "XNC") {
+            mainSettings.color.xNullclineColor = xppColor(std::stoi(opt.Expr));
+        } else if (opt.Name == "YNC") {
+            mainSettings.color.yNullclineColor = xppColor(std::stoi(opt.Expr));
+        } else if (opt.Name == "METH") {
+            solverSettings.method = setMethod(opt.Expr);
+        } else if (opt.Name == "EPSL") {
+            autoSettings.EPSL = std::stod(opt.Expr);
+        } else if (opt.Name == "EPSU") {
+            autoSettings.EPSU = std::stod(opt.Expr);
+        } else if (opt.Name == "EPSS") {
+            autoSettings.EPSS = std::stod(opt.Expr);
+        } else if (opt.Name == "IAD") {
+            autoSettings.IAD = std::stod(opt.Expr);
+        } else if (opt.Name == "IADS") {
+            autoSettings.IADS = std::stod(opt.Expr);
+        } else if (opt.Name == "IID") {
+            autoSettings.IID = std::stod(opt.Expr);
+        } else if (opt.Name == "ITMX") {
+            autoSettings.ITMX = std::stod(opt.Expr);
+        } else if (opt.Name == "ITNW") {
+            autoSettings.ITNW = std::stod(opt.Expr);
+        } else if (opt.Name == "MXBF") {
+            autoSettings.MXBF = std::stod(opt.Expr);
+        } else if (opt.Name == "DS") {
+            autoSettings.Ds = std::stod(opt.Expr);
+        } else if (opt.Name == "DSMAX") {
+            autoSettings.DsMax = std::stod(opt.Expr);
+        } else if (opt.Name == "DSMIN") {
+            autoSettings.DsMin = std::stod(opt.Expr);
+        } else if (opt.Name == "PARMAX") {
+            autoSettings.ParMax = std::stod(opt.Expr);
+        } else if (opt.Name == "PARMIN") {
+            autoSettings.ParMin = std::stod(opt.Expr);
+        } else if (opt.Name == "NORMMAX") {
+            autoSettings.NormMax = std::stod(opt.Expr);
+        } else if (opt.Name == "NORMMIN") {
+            autoSettings.NormMin = std::stod(opt.Expr);
+        } else if (opt.Name == "AUTOXMAX") {
+            autoSettings.xMax = std::stod(opt.Expr);
+        } else if (opt.Name == "AUTOXMIN") {
+            autoSettings.xMin = std::stod(opt.Expr);
+        } else if (opt.Name == "AUTOYMAX") {
+            autoSettings.yMax = std::stod(opt.Expr);
+        } else if (opt.Name == "AUTOYMIN") {
+            autoSettings.yMin = std::stod(opt.Expr);
+        } else if (opt.Name == "TRANS") {
+            mainSettings.trans = std::stod(opt.Expr);
+        } else if (opt.Name == "T0") {
+            mainSettings.tStart = std::stod(opt.Expr);
+        } else if (opt.Name == "TOTAL") {
+            mainSettings.tEnd = std::stod(opt.Expr);
+        } else if (opt.Name == "BOUND") {
+            mainSettings.bound = std::stod(opt.Expr);
+        } else if (opt.Name == "XHI") {
+            mainSettings.xMax = std::stod(opt.Expr);
+        } else if (opt.Name == "XLO") {
+            mainSettings.xMin = std::stod(opt.Expr);
+        } else if (opt.Name == "YHI") {
+            mainSettings.yMax = std::stod(opt.Expr);
+        } else if (opt.Name == "YLO") {
+            mainSettings.yMin = std::stod(opt.Expr);
+        } else if (opt.Name == "JAC_EPS") {
+            solverSettings.JAC_EPS = std::stod(opt.Expr);
+        } else if (opt.Name == "NEWT_TOL") {
+            solverSettings.NEWT_TOL = std::stod(opt.Expr);
+        } else if (opt.Name == "NEWT_ITER") {
+            solverSettings.NEWT_ITER = std::stod(opt.Expr);
+        } else if (opt.Name == "DT") {
+            solverSettings.dt = std::stod(opt.Expr);
+        } else if (opt.Name == "DTMAX") {
+            solverSettings.dtMax = std::stod(opt.Expr);
+        } else if (opt.Name == "DTMIN") {
+            solverSettings.dtMin = std::stod(opt.Expr);
+        } else if (opt.Name == "DELAY") {
+            solverSettings.maxDelay = std::stod(opt.Expr);
+        } else if (opt.Name == "LOGFILE") {
+            mainSettings.logFile = opt.Expr;
+        } else if (opt.Name == "OUTPUT") {
+            mainSettings.outputFile = opt.Expr;
         } else {
             throw std::runtime_error("Unknown option\n");
         }
     }
+}
+
+/**
+ * @brief xppParser::setMethod Translate the string key into a xppMethod enum.
+ * @param key The option expression containing the key.
+ * @return The xppMethod of the solver method.
+ */
+xppMethod xppSettings::setMethod(const std::string& key) {
+    xppMethod method = METHOD_DISCRETE;
+    if (key == "discrete") {
+        method = METHOD_DISCRETE;
+    } else if (key == "euler") {
+        method = METHOD_EULER;
+    } else if (key == "modeuler") {
+        method = METHOD_MODEULER;
+    } else if (key == "rungekutta") {
+        method = METHOD_RK4;
+    } else if (key == "adams") {
+        method = METHOD_ADAMS;
+    } else if (key == "gear") {
+        method = METHOD_GEAR;
+    } else if (key == "volterra") {
+        method = METHOD_VOLTERRA;
+    } else if (key == "backeul") {
+        method = METHOD_BACKEUL;
+    } else if (key == "qualrk") {
+        method = METHOD_RKQS;
+    } else if (key == "stiff") {
+        method = METHOD_STIFF;
+    } else if (key == "cvode") {
+        method = METHOD_CVODE;
+    } else if (key == "5dp") {
+        method = METHOD_DP5;
+    } else if (key == "83dp") {
+        method = METHOD_DP83;
+    } else if (key == "2rb") {
+        method = METHOD_RB23;
+    } else if (key == "symp") {
+        method = METHOD_SYMPLECT;
+    } else {
+        throw std::runtime_error("Unknown solver method!\n");
+    }
+    return method;
 }

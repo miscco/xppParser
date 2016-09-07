@@ -1,8 +1,6 @@
 #ifndef XPPSETTINGS_H
 #define XPPSETTINGS_H
 
-#include <iostream>
-#include <map>
 #include <stdexcept>
 #include <string>
 
@@ -19,6 +17,7 @@ public:
     void initializeOptions(const optsArray& options);
 
 private:
+    xppMethod setMethod(const std::string& key);
 
     xppAutoSettings   autoSettings;
     xppMainSettings   mainSettings;
