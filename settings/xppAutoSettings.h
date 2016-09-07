@@ -23,13 +23,13 @@ private:
     double  EPSU    = 1E-7;
     double  EPSS    = 1E-7;
 
-    double  IAD     = 3;
-    double  MXBF    = 5;
-    double  IID     = 2;
-    double  ITMX    = 8;
-    double  ITNW    = 7;
-    double  NWTN    = 3;
-    double  IADS    = 1;
+    double  IAD     = 3.;
+    double  MXBF    = 5.;
+    double  IID     = 2.;
+    double  ITMX    = 8.;
+    double  ITNW    = 7.;
+    double  NWTN    = 3.;
+    double  IADS    = 1.;
 
     double  Ds      = 1E-3;
     double  DsMax   = 0.5;

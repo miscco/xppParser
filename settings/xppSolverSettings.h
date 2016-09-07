@@ -36,8 +36,6 @@ public:
      */
     xppSolverSettings() {}
 
-
-
     /**
      * @brief xppParser::setMethod Translate the string key into a xppMethod enum.
      * @param key The option expression containing the key.
@@ -89,7 +87,7 @@ private:
     double	 ATOLER		= 1E-5;
     double	 TOLER		= 1E-5;
 
-    unsigned maxPoints   = 4000;
+    unsigned maxPoints  = 4000;
     double	 maxDelay	= 0.0;
 
     double	 dt			= 0.05;
