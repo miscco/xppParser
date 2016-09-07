@@ -94,7 +94,6 @@ private:
     opts	  Wieners;
 
     friend class xppEvaluator;
-    friend class xppSettings;
 };
 
 #endif // XPPPARSER_H

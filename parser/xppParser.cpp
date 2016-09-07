@@ -379,7 +379,11 @@ void xppParser::extractDefinition(void) {
             opt.Expr = getNextExpr(*line, pos1, pos2);
 
             /* Check numbers are indeed numeric expressions */
-            if (res.id == 8) {
+            if (res.id == 8 ||
+                (res.id == 17 &&
+                 opt.Name != "OUTPUT" &&
+                 opt.Name != "LOGFILE" &&
+                 opt.Name != "METH")) {
                 if (!isNumeric(opt.Expr)) {
                     throw xppParserException(EXPECTED_NUMBER, *line, pos1);
                 }
