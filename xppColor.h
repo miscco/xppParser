@@ -5,7 +5,7 @@
  * @brief The xppColor enum defines the possible line colors utilized by xppaut
  */
 enum xppColor {
-    WHITE,
+    WHITE = 0,
     RED,
     REDORANGE,
     ORANGE,
@@ -23,7 +23,7 @@ enum xppColor {
  * @brief The xppColorMap enum defines the different colormaps that can be used
  */
 enum xppColorMap {
-    C_NORM,
+    C_NORM = 0,
     C_PERIODIC,
     C_HOT,
     C_COOL,
