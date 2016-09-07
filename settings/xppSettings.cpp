@@ -1,6 +1,6 @@
 #include "xppSettings.h"
 
-xppSettings::xppSettings()
+xppSettings::xppSettings(const optsArray &options)
 {
     boolMap.insert(bPair("QUIET",   &mainSettings.quietMode));
     boolMap.insert(bPair("GRADS",   &mainSettings.useGradient));
@@ -23,6 +23,7 @@ xppSettings::xppSettings()
     uintMap.insert(uPair("NMESH",   &mainSettings.numMesh));
     uintMap.insert(uPair("DFGRID",  &mainSettings.gridDF));
     uintMap.insert(uPair("SEED",    &mainSettings.seedRNG));
+    uintMap.insert(uPair("MAXSTOR", &mainSettings.maxStore));
     uintMap.insert(uPair("SMC", (unsigned*)&mainSettings.color.stableManifoldColor));
     uintMap.insert(uPair("UMC", (unsigned*)&mainSettings.color.unstableManifoldColor));
     uintMap.insert(uPair("XNC", (unsigned*)&mainSettings.color.xNullclineColor));
@@ -63,6 +64,10 @@ xppSettings::xppSettings()
 
     stringMap.insert(sPair("LOGFILE", &mainSettings.logFile));
     stringMap.insert(sPair("OUTPUT", &mainSettings.outputFile));
+
+    for (const opts &opt : options) {
+        setOption(opt);
+    }
 }
 /**
  * @brief getOption Set the option defined in the opts structure
@@ -78,6 +83,8 @@ T xppSettings::getOption(const std::string &key) {
         return *uintMap.at(key);
     } else if (stringMap.find(key) != stringMap.end()) {
         return *stringMap.at(key);
+    } else {
+        throw std::runtime_error("Unknown option\n");
     }
 }
 
@@ -94,5 +101,8 @@ void xppSettings::setOption(const opts &opt) {
         *uintMap.at(opt.Name) = (unsigned) std::stoi(opt.Expr);
     } else if (stringMap.find(opt.Name) != stringMap.end()) {
         *stringMap.at(opt.Name) = opt.Expr;
+    } else {
+        std::cout << "Name: " << opt.Name << std::endl;
+        throw std::runtime_error("Unknown option\n");
     }
 }

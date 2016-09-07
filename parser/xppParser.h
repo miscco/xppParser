@@ -21,6 +21,8 @@ public:
     xppParser(const std::string &fn);
     xppParser(const xppParser &parser);
 
+    const optsArray getOptions (void) const {return Options;}
+
 private:
     void expandArrays		(void);
     void expandArrayLines	(std::vector<lineNumber> &lines,
@@ -92,7 +94,7 @@ private:
     opts	  Wieners;
 
     friend class xppEvaluator;
-    friend class xppMainSettings;
+    friend class xppSettings;
 };
 
 #endif // XPPPARSER_H

@@ -3,6 +3,7 @@
 
 #include "parser/xppEvaluator.h"
 #include "parser/xppParser.h"
+#include "settings/xppSettings.h"
 
 int main(int argc, char** argv)
 {
@@ -13,6 +14,8 @@ int main(int argc, char** argv)
         filename = std::string(argv[1]);
     }
     xppParser parseOde(filename);
+
+    xppSettings(parseOde.getOptions());
 
     xppEvaluator evaluateOde(parseOde);
 

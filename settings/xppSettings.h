@@ -1,7 +1,9 @@
 #ifndef XPPSETTINGS_H
 #define XPPSETTINGS_H
 
+#include <iostream>
 #include <map>
+#include <stdexcept>
 #include <string>
 
 #include "parser/xppParserDefines.h"
@@ -16,7 +18,7 @@ class xppSettings
     typedef std::pair<std::string, std::string*> sPair;
     typedef std::pair<std::string, unsigned*>    uPair;
 public:
-    xppSettings();
+    xppSettings(const optsArray& options);
 
     template<typename T>
     T getOption(const std::string &key);
@@ -32,7 +34,6 @@ private:
     xppAutoSettings   autoSettings;
     xppMainSettings   mainSettings;
     xppSolverSettings solverSettings;
-
 };
 
 #endif // XPPSETTINGS_H

@@ -355,7 +355,8 @@ void xppParser::extractDefinition(void) {
             }
 
             /* Check whether the name is already taken/reserved, except for
-             * initial conditions, where we check for existence.
+             * initial conditions, where we check for existence. Also check
+             * whether a given option is valid.
              */
             if (res.id != 10 &&
                 res.id != 17) {
@@ -367,6 +368,10 @@ void xppParser::extractDefinition(void) {
             } else if (res.id == 17) {
                 if (options.parseText(opt.Name).empty()) {
                     throw xppParserException(UNKNOWN_OPTION, *line, pos1);
+                }
+                /* Turn the name to upper case to simplify further handling */
+                for (char &c : opt.Name) {
+                    c = std::toupper(c);
                 }
             }
 

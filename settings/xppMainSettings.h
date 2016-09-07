@@ -24,6 +24,7 @@ private:
     unsigned numJump= 1;
     unsigned numMesh= 40;
     unsigned gridDF	= 10;
+    unsigned maxStore = 5000;
 
     double	tStart	= 0.0;
     double	trans	= 0.0;
