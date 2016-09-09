@@ -14,24 +14,24 @@ public:
      */
     xppMainSettings() {}
 private:
-    bool quietMode	= false;
-    bool useGradient= false;
-    bool runNow		= false;
-    bool simPlot	= false;
-    bool is3D		= false;
+    bool quietMode      = false;
+    bool useGradient    = false;
+    bool runNow         = false;
+    bool simPlot        = false;
+    bool is3D           = false;
 
-    unsigned seedRNG= 0;
-    unsigned numPlots= 1;
-    unsigned numJump= 1;
-    unsigned numMesh= 40;
-    unsigned gridDF	= 10;
-    unsigned maxStore = 5000;
+    unsigned seedRNG    = 0;
+    unsigned numPlots   = 1;
+    unsigned numJump    = 1;
+    unsigned numMesh    = 40;
+    unsigned gridDF     = 10;
+    unsigned maxStore   = 5000;
 
-    double	tStart	= 0.0;
-    double  tEnd    = 20.0;
-    double	trans	= 0.0;
+    double	tStart      = 0.0;
+    double  tEnd        = 20.0;
+    double	trans       = 0.0;
 
-    double  bound   = 100.;
+    double  bound       = 100.;
 
     std::string	logFile		= "";
     std::string outputFile  = "";

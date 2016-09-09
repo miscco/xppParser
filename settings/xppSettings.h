@@ -9,6 +9,7 @@
 #include "settings/xppMainSettings.h"
 #include "settings/xppSolverSettings.h"
 #include "xppColor.h"
+#include "xppPlots.h"
 
 class xppSettings
 {

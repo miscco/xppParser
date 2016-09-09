@@ -37,7 +37,7 @@ public:
     xppSolverSettings() {}
 
     /**
-     * @brief xppParser::setMethod Translate the string key into a xppMethod enum.
+     * @brief setMethod Translate the string key into a xppMethod enum.
      * @param key The option expression containing the key.
      * @return The xppMethod of the solver method.
      */
