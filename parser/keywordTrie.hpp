@@ -25,6 +25,7 @@
 
 #ifndef KEYWORDTRIE_HPP
 #define KEYWORDTRIE_HPP
+#include <memory>
 #include <queue>
 #include <set>
 #include <stdexcept>
@@ -45,7 +46,8 @@ struct node {
     node *output        = nullptr;	/**< Output link */
     std::vector<node*> children;	/**< Child nodes */
 
-    explicit node () {}
+    explicit node ()
+        : parent(this), failure(this), output(this) {}
     explicit node (const unsigned d, const char &character, const node *par, node *root)
         : depth(d), c(character), parent(par), failure(root), output(root) {}
 };
@@ -73,12 +75,12 @@ typedef std::vector<resultCollection>	 resultTable;
 /**
  * @brief The trie class representing the keyword trie.
  */
-class trie
-{
+class trie {
+    typedef std::unique_ptr<node> nodeptr;
 private:
-    node *root		   = nullptr;   /**< The root node */
-    std::vector<node*>	trieNodes;	/**< Container of the node pointers */
+    std::vector<nodeptr>trieNodes;	/**< Container of the node pointers */
     resultCollection	keywords;	/**< Container of the result stubs */
+    node *root		   = nullptr;   /**< The root node */
     bool caseSensitive = true;      /**< Flag for case sensitivity */
     bool wholeWords    = false;     /**< Flag for result validity */
 
@@ -87,11 +89,8 @@ public:
      * @brief trie Initializes the trie structure with its root node.
      */
     trie() {
-        root = new node();
-        root->parent  = root;
-        root->failure = root;
-        root->output  = root;
-        trieNodes.push_back(root);
+        trieNodes.push_back(nodeptr(new node()));
+        root = trieNodes.back().get();
     }
     /**
      * @brief trie Copy an existing keyword trie.
@@ -103,10 +102,6 @@ public:
         }
         addFailureLinks();
     }
-    /**
-     * @brief ~trie Destructor of the trie that frees nodes from heap.
-     */
-    ~trie() {for (node* N : trieNodes) delete N;}
 
     /**
      * @brief addString Insert a new keyword into the keyword trie.
@@ -228,9 +223,12 @@ private:
                 return child;
             }
         }
-        trieNodes.push_back(new node(current->depth+1, character, current, root));
-        current->children.push_back(trieNodes.back());
-        return trieNodes.back();
+        trieNodes.push_back(nodeptr(new node(current->depth+1,
+                                             character,
+                                             current,
+                                             root)));
+        current->children.push_back(trieNodes.back().get());
+        return trieNodes.back().get();
     }
 
     /**
