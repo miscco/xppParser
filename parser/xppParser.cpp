@@ -970,7 +970,7 @@ void xppParser::removeWhitespace() {
 }
 
 /**
- * @brief Checks a keyword search in case of multiple matches
+ * @brief Performs a keyword search and cleanes up multiple results
  *
  * @par expr: The std::string to be searched for the keyword
  * @par character: The character after expr.
