@@ -99,46 +99,26 @@ xppParser::xppParser(const xppParser &parser)
  * @brief Checks whether brackets are closed properly
  */
 void xppParser::checkBrackets() {
-    using charPos = std::pair<char, size_t>;
-    std::stack<charPos> brackets;
+    std::map<char, char> bracketPairs= {std::make_pair(')', '('),
+                                        std::make_pair(']', '['),
+                                        std::make_pair('}', '{')};
+    std::stack<std::pair<char, size_t>> brackets;
     for (lineNumber line : lines) {
         auto start = line.first.begin();
         for (auto it = start; it != line.first.end(); ++it) {
             switch (*it) {
             case '(':
-                brackets.push(charPos(')', std::distance(start, it)));
-                break;
-            case '{':
-                brackets.push(charPos('}', std::distance(start, it)));
-                break;
             case '[':
-                brackets.push(charPos(']', std::distance(start, it)));
+            case '{':
+                brackets.push(std::make_pair(*it, std::distance(start, it)));
                 break;
             case ')':
-                if (brackets.empty()) {
-                    throw xppParserException(MISSING_OPENING_BRACKET, line,
-                                             std::distance(start, it));
-                } else if (brackets.top().first != ')') {
-                    throw xppParserException(MISSING_CLOSING_BRACKET, line,
-                                             brackets.top().second);
-                }
-                brackets.pop();
-                break;
+            case ']':
             case '}':
                 if (brackets.empty()) {
                     throw xppParserException(MISSING_OPENING_BRACKET, line,
                                              std::distance(start, it));
-                } else if (brackets.top().first != '}') {
-                    throw xppParserException(MISSING_CLOSING_BRACKET, line,
-                                             brackets.top().second);
-                }
-                brackets.pop();
-                break;
-            case ']':
-                if (brackets.empty()) {
-                    throw xppParserException(MISSING_OPENING_BRACKET, line,
-                                             std::distance(start, it));
-                } else if (brackets.top().first != ']') {
+                } else if (brackets.top().first != bracketPairs[*it]) {
                     throw xppParserException(MISSING_CLOSING_BRACKET, line,
                                              brackets.top().second);
                 }
@@ -744,7 +724,7 @@ void xppParser::extractWiener(void) {
  * @brief Extracts elements from a brace enclosed list
  *
  * @par line: String we are searching in
- * @par	encloure: The bracket type { or (
+ * @par	closure: The bracket type { or (
  * @par	delim: The delimiter type , or ;
  *
  * @return Args: Vector of strings of the list elements
@@ -892,26 +872,26 @@ void xppParser::readFile(void) {
     }
 
     /* Parse in nonempty lines */
-    std::string temp;
+    std::string line;
     int lineCount = 1;
-    while(getline(fileStream, temp)) {
-        size_t pos1 = temp.find_first_not_of(" \t\f\v\r\n");
-        if (temp == "done") {
+    while (getline(fileStream, line)) {
+        size_t pos1 = line.find_first_not_of(" \t\f\v\r\n");
+        if (line == "done") {
             break;
-        } else if (!temp.empty() && pos1 != std::string::npos) {
+        } else if (!line.empty() && pos1 != std::string::npos) {
             /* Remove trailing and superflous whitespaces */
-            temp.erase(0, pos1);
-            temp.resize(temp.find_last_not_of(" \t\f\v\r\n")+1);
-            auto last = std::unique(temp.begin(), temp.end(),
+            line.erase(0, pos1);
+            line.resize(line.find_last_not_of(" \t\f\v\r\n")+1);
+            auto last = std::unique(line.begin(), line.end(),
                                     [](char l, char r){return std::isspace(l) &&
                         std::isspace(r);});
-            temp.erase(last, temp.end());
-            lines.push_back(std::make_pair(temp, lineCount));
+            line.erase(last, line.end());
+            lines.push_back(std::make_pair(line, lineCount));
         }
         ++lineCount;
     }
 
-    if (lines.size() == 0) {
+    if (lines.empty()) {
         throw std::runtime_error("Empty ode file " + fileName + "\n");
     }
     fileStream.close();
@@ -1022,7 +1002,7 @@ keywordTrie::result xppParser::keywordSearch(const std::string &expr,
             }
         }
         /* No valid keyword left, this must be an expression */
-        if (results.size() == 0) {
+        if (results.empty()) {
             results.push_back(keywordTrie::result("", xppKeywords.size()));
         }
     }
